@@ -603,29 +603,6 @@ function cancelTrip(id: string) {
   showCancelDialog.value = true
 }
 
-function dispatchTrip(id: string) {
-  dispatchingTripId.value = id
-  showDispatchDialog.value = true
-}
-
-async function handleDispatch() {
-  if (!dispatchingTripId.value) return
-  
-  dispatching.value = true
-  try {
-    await $fetch(`/api/trips/${dispatchingTripId.value}/dispatch`, { method: 'POST' })
-    success('Trip dispatched', 'Driver and vehicle assigned successfully.')
-    showDispatchDialog.value = false
-    dispatchingTripId.value = null
-    await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
-  } catch (e: any) {
-    console.error(e)
-    error('Error dispatching trip', e.data?.message)
-  } finally {
-    dispatching.value = false
-  }
-}
-
 async function handleCancelTrip() {
   if (!cancellingTripId.value) return
   
