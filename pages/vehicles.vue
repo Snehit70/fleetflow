@@ -2,7 +2,7 @@
   <div class="p-6">
     <PageHeader title="Vehicles" subtitle="Manage your fleet">
       <template #actions>
-        <UButton color="primary" @click="showAddModal = true">Add Vehicle</UButton>
+        <UButton v-if="canEdit" color="primary" @click="showAddModal = true">Add Vehicle</UButton>
       </template>
     </PageHeader>
 
@@ -33,8 +33,11 @@
               </UBadge>
             </td>
             <td class="px-6 py-4">
-              <UButton size="xs" variant="ghost" @click="editVehicle(vehicle)">Edit</UButton>
-              <UButton size="xs" variant="ghost" color="red" @click="deleteVehicle(vehicle.id)">Delete</UButton>
+              <template v-if="canEdit">
+                <UButton size="xs" variant="ghost" @click="editVehicle(vehicle)">Edit</UButton>
+                <UButton size="xs" variant="ghost" color="red" @click="deleteVehicle(vehicle.id)">Delete</UButton>
+              </template>
+              <span v-else class="text-gray-400 text-sm">Read only</span>
             </td>
           </tr>
         </tbody>
@@ -86,8 +89,11 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'default',
-  middleware: 'auth'
+  middleware: ['auth', 'role'],
+  roles: ['MANAGER', 'DISPATCHER']
 })
+
+const { user } = useAuth()
 
 const vehicles = ref<any[]>([])
 const loading = ref(true)
@@ -102,6 +108,8 @@ const form = ref({
   region: ''
 })
 const saving = ref(false)
+
+const canEdit = computed(() => user.value?.role === 'MANAGER')
 
 onMounted(async () => {
   await loadVehicles()

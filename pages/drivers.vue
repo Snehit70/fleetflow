@@ -110,7 +110,8 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'default',
-  middleware: 'auth'
+  middleware: ['auth', 'role'],
+  roles: ['MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']
 })
 
 const drivers = ref<any[]>([])

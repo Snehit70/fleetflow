@@ -93,7 +93,8 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'default',
-  middleware: 'auth'
+  middleware: ['auth', 'role'],
+  roles: ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST']
 })
 
 const fuelEfficiency = ref<any[]>([])
