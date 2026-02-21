@@ -244,6 +244,18 @@
         </div>
       </form>
     </Modal>
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      :is-open="showDeleteDialog"
+      title="Delete Driver"
+      :message="`Are you sure you want to delete ${deletingDriver?.name}? This action cannot be undone.`"
+      type="danger"
+      confirm-text="Delete"
+      :loading="deleting"
+      @confirm="handleDelete"
+      @cancel="showDeleteDialog = false"
+    />
   </div>
 </template>
 
@@ -274,6 +286,11 @@ const loading = ref(true)
 const showModal = ref(false)
 const editingDriver = ref<Driver | null>(null)
 const saving = ref(false)
+
+// Delete dialog state
+const showDeleteDialog = ref(false)
+const deletingDriver = ref<Driver | null>(null)
+const deleting = ref(false)
 
 // Filters
 const searchQuery = ref('')
@@ -396,16 +413,26 @@ async function handleSubmit() {
   }
 }
 
-async function confirmDelete(driver: Driver) {
-  if (!confirm(`Are you sure you want to delete ${driver.name}?`)) return
+function confirmDelete(driver: Driver) {
+  deletingDriver.value = driver
+  showDeleteDialog.value = true
+}
+
+async function handleDelete() {
+  if (!deletingDriver.value) return
   
+  deleting.value = true
   try {
-    await $fetch(`/api/drivers/${driver.id}`, { method: 'DELETE' })
-    success('Driver deleted', `${driver.name} has been removed from your team.`)
+    await $fetch(`/api/drivers/${deletingDriver.value.id}`, { method: 'DELETE' })
+    success('Driver deleted', `${deletingDriver.value.name} has been removed from your team.`)
+    showDeleteDialog.value = false
+    deletingDriver.value = null
     await loadDrivers()
   } catch (e: any) {
     console.error(e)
     error('Error deleting driver', e.data?.message || 'Please try again.')
+  } finally {
+    deleting.value = false
   }
 }
 </script>

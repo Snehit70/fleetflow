@@ -242,6 +242,18 @@
         </div>
       </form>
     </Modal>
+
+    <!-- Return to Service Confirmation Dialog -->
+    <ConfirmDialog
+      :is-open="showReturnDialog"
+      title="Return to Service"
+      :message="`Mark ${returningVehicle?.name} as back in service? The vehicle will become available for trips.`"
+      type="info"
+      confirm-text="Return to Service"
+      :loading="returning"
+      @confirm="handleReturnToService"
+      @cancel="showReturnDialog = false"
+    />
   </div>
 </template>
 
@@ -276,6 +288,11 @@ const vehicles = ref<Vehicle[]>([])
 const loading = ref(true)
 const showAddModal = ref(false)
 const saving = ref(false)
+
+// Return to service dialog state
+const showReturnDialog = ref(false)
+const returningVehicle = ref<Vehicle | null>(null)
+const returning = ref(false)
 
 const presetDescriptions = ['Oil Change', 'Tire Rotation', 'Brake Service', 'Engine Tune-up', 'Transmission Service', 'General Inspection']
 
@@ -329,19 +346,29 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
-async function markBackInService(vehicleId: string, vehicleName: string) {
-  if (!confirm(`Mark ${vehicleName} as back in service?`)) return
+function markBackInService(vehicleId: string, vehicleName: string) {
+  returningVehicle.value = vehicles.value.find(v => v.id === vehicleId) || null
+  showReturnDialog.value = true
+}
+
+async function handleReturnToService() {
+  if (!returningVehicle.value) return
   
+  returning.value = true
   try {
-    await $fetch(`/api/vehicles/${vehicleId}`, {
+    await $fetch(`/api/vehicles/${returningVehicle.value.id}`, {
       method: 'PUT',
       body: { status: 'AVAILABLE' }
     })
-    success('Vehicle returned to service', `${vehicleName} is now available.`)
+    success('Vehicle returned to service', `${returningVehicle.value.name} is now available.`)
+    showReturnDialog.value = false
+    returningVehicle.value = null
     await loadVehicles()
   } catch (e: any) {
     console.error(e)
     error('Error updating vehicle status', e.data?.message)
+  } finally {
+    returning.value = false
   }
 }
 

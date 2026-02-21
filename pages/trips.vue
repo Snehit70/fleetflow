@@ -324,6 +324,18 @@
         </div>
       </form>
     </Modal>
+
+    <!-- Cancel Trip Confirmation Dialog -->
+    <ConfirmDialog
+      :is-open="showCancelDialog"
+      title="Cancel Trip"
+      message="Are you sure you want to cancel this trip? This action cannot be undone."
+      type="warning"
+      confirm-text="Cancel Trip"
+      :loading="cancelling"
+      @confirm="handleCancelTrip"
+      @cancel="showCancelDialog = false"
+    />
   </div>
 </template>
 
@@ -374,9 +386,12 @@ const drivers = ref<Driver[]>([])
 const loading = ref(true)
 const showAddModal = ref(false)
 const showCompleteModal = ref(false)
+const showCancelDialog = ref(false)
+const cancellingTripId = ref<string | null>(null)
 const completingTrip = ref<Trip | null>(null)
 const saving = ref(false)
 const completing = ref(false)
+const cancelling = ref(false)
 const validationError = ref('')
 const activeTab = ref('all')
 
@@ -540,16 +555,26 @@ async function handleComplete() {
   }
 }
 
-async function cancelTrip(id: string) {
-  if (!confirm('Are you sure you want to cancel this trip?')) return
+function cancelTrip(id: string) {
+  cancellingTripId.value = id
+  showCancelDialog.value = true
+}
+
+async function handleCancelTrip() {
+  if (!cancellingTripId.value) return
   
+  cancelling.value = true
   try {
-    await $fetch(`/api/trips/${id}/cancel`, { method: 'POST' })
-    success('Trip cancelled')
+    await $fetch(`/api/trips/${cancellingTripId.value}/cancel`, { method: 'POST' })
+    success('Trip cancelled', 'The trip has been cancelled successfully.')
+    showCancelDialog.value = false
+    cancellingTripId.value = null
     await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
   } catch (e: any) {
     console.error(e)
     error('Error cancelling trip', e.data?.message)
+  } finally {
+    cancelling.value = false
   }
 }
 

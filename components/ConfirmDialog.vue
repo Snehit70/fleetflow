@@ -2,46 +2,47 @@
   <ClientOnly>
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="isOpen" class="modal-overlay" @click.self="cancel">
-        <div class="modal-content max-w-sm">
-          <!-- Icon -->
-          <div class="flex justify-center mb-4">
-            <div :class="iconContainerClass">
-              <component :is="icon" class="w-6 h-6" />
+        <div v-if="isOpen" class="confirm-overlay">
+          <div class="confirm-backdrop" @click="cancel" />
+          <div class="confirm-panel">
+            <!-- Icon -->
+            <div class="confirm-icon-wrapper">
+              <div :class="iconContainerClass">
+                <component :is="icon" class="w-6 h-6" />
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="text-center mb-6">
+              <h3 class="text-lg font-semibold mb-2">{{ title }}</h3>
+              <p class="text-sm text-muted-foreground">{{ message }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+              <button 
+                @click="cancel" 
+                class="btn-secondary btn-md flex-1"
+                :disabled="loading"
+              >
+                {{ cancelText }}
+              </button>
+              <button 
+                @click="confirm" 
+                :class="confirmButtonClass"
+                :disabled="loading"
+              >
+                <svg v-if="loading" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" />
+                </svg>
+                <span v-else>{{ confirmText }}</span>
+              </button>
             </div>
           </div>
-
-          <!-- Content -->
-          <div class="text-center mb-6">
-            <h3 class="text-lg font-semibold text-foreground mb-2">{{ title }}</h3>
-            <p class="text-sm text-muted-foreground">{{ message }}</p>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3">
-            <button 
-              @click="cancel" 
-              class="btn-secondary btn-md flex-1"
-              :disabled="loading"
-            >
-              {{ cancelText }}
-            </button>
-            <button 
-              @click="confirm" 
-              :class="confirmButtonClass"
-              :disabled="loading"
-            >
-              <svg v-if="loading" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
-                <path d="M12 2a10 10 0 0 1 10 10" />
-              </svg>
-              <span v-else>{{ confirmText }}</span>
-            </button>
-          </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
   </ClientOnly>
 </template>
 
@@ -123,24 +124,46 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.confirm-panel {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  background: hsl(var(--card));
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 1.5rem;
+}
+
+.confirm-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 200ms ease;
 }
 
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 200ms ease, opacity 200ms ease;
-}
-
 .modal-enter-from,
 .modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  transform: translate(-50%, -50%) scale(0.95);
   opacity: 0;
 }
 </style>
