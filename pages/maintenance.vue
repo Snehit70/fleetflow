@@ -45,7 +45,7 @@
               </div>
               <button 
                 v-if="canEdit"
-                @click="markBackInService(v.id, v.name)" 
+                @click="markBackInService(v.id)" 
                 class="btn-primary btn-sm"
               >
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -336,7 +336,11 @@ async function loadVehicles() {
 }
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -347,7 +351,7 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
-function markBackInService(vehicleId: string, vehicleName: string) {
+function markBackInService(vehicleId: string) {
   returningVehicle.value = vehicles.value.find(v => v.id === vehicleId) || null
   showReturnDialog.value = true
 }

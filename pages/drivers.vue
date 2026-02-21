@@ -323,32 +323,30 @@ const filteredDrivers = computed(() => {
 
 const expiringLicenses = computed(() => {
   const now = new Date()
+  // Create date at end of day to include licenses expiring today
   const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-  return drivers.value.filter(d => new Date(d.licenseExpiry) <= thirtyDaysFromNow)
+  
+  return drivers.value.filter(d => {
+    const expiry = parseDateOnly(d.licenseExpiry)
+    return expiry && expiry <= thirtyDaysFromNow
+  })
 })
 
-onMounted(async () => {
-  await loadDrivers()
-})
-
-async function loadDrivers() {
-  loading.value = true
-  try {
-    drivers.value = await $fetch('/api/drivers')
-  } catch (e) {
-    console.error(e)
-    error('Failed to load drivers')
-  } finally {
-    loading.value = false
-  }
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+function parseDateOnly(dateString: string): Date | null {
+  // Parse YYYY-MM-DD as local date (no timezone shift)
+  const parts = dateString.split('-')
+  if (parts.length !== 3) return null
+  const year = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10) - 1 // 0-indexed
+  const day = parseInt(parts[2], 10)
+  const date = new Date(year, month, day)
+  return isNaN(date.getTime()) ? null : date
 }
 
 function isExpired(dateString: string): boolean {
-  return new Date(dateString) < new Date()
+  const expiry = parseDateOnly(dateString)
+  if (!expiry) return false
+  return expiry < new Date()
 }
 
 function getSafetyScoreColor(score: number): string {

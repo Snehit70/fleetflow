@@ -112,14 +112,18 @@ function cancel() {
 }
 
 // Close on escape key
-onMounted(() => {
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.isOpen && !props.loading) {
-      cancel()
-    }
+const handleEscape = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && props.isOpen && !props.loading) {
+    cancel()
   }
+}
+
+onMounted(() => {
   window.addEventListener('keydown', handleEscape)
-  onUnmounted(() => window.removeEventListener('keydown', handleEscape))
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleEscape)
 })
 </script>
 
