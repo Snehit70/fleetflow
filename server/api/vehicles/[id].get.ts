@@ -1,7 +1,8 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['MANAGER', 'DISPATCHER'])
+  requireRole(event, ['MANAGER', 'DISPATCHER', 'FINANCIAL_ANALYST'])
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, message: 'Vehicle ID required' })
 

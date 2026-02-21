@@ -16,26 +16,30 @@
 - [x] Phase 5: Financial Features (Maintenance, Expenses, Fuel Logs)
 - [x] Phase 6: Analytics (API, Charts, CSV Export)
 - [x] Phase 7: RBAC & Security
-- [x] Phase 8: Bug Fixes (Nuxt 4 imports, Prisma singleton)
+- [x] Phase 8: Bug Fixes & Edge Cases
 
 ---
 
-## Phase 9: Testing
+## Bug Fixes Applied
 
-- [~] Run dev server and test manually
-- [ ] Test all CRUD workflows end-to-end
-- [ ] Test auth/permissions flow
-- [ ] Verify all business rules are enforced
+- [x] Nuxt 4 import paths (#server alias)
+- [x] Prisma singleton pattern
+- [x] UI RBAC buttons (hide for read-only roles)
+- [x] Trip cancel transaction (moved status update inside tx)
+- [x] Vehicle delete FK constraint check
+- [x] Driver delete FK constraint check
+- [x] Vehicle PUT field whitelisting
+- [x] Vehicle edit form status field
+- [x] Odometer rollback validation
 
 ---
 
-## Phase 10: Submission
+## Phase 9: Final Review
 
-- [ ] Final commit
-- [ ] Update README with screenshots
+- [ ] Manual testing by user
 - [ ] Record demo video
-- [ ] Submit video link
 
 ---
 
 ## Current Branch: `feat/project-setup`
+## Build Status: ✅ Passing

@@ -1,7 +1,8 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'])
+  requireRole(event, ['MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'])
   const totalVehicles = await prisma.vehicle.count()
   const totalDrivers = await prisma.driver.count()
   const activeFleet = await prisma.vehicle.count({ where: { status: 'ON_TRIP' } })
