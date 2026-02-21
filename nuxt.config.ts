@@ -3,6 +3,12 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
+  // Use root directory as srcDir (Nuxt 4 defaults to 'app/')
+  srcDir: '.',
+  dir: {
+    app: 'app',
+  },
+
   devServer: {
     port: 4000,
   },

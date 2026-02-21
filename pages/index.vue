@@ -245,32 +245,49 @@ const currentDate = computed(() => {
 
 onMounted(async () => {
   try {
-    const [dashboardData, vehicles, drivers] = await Promise.all([
-      $fetch('/api/analytics/dashboard'),
-      $fetch('/api/vehicles'),
-      $fetch('/api/drivers')
-    ])
-    
+    // Fetch dashboard data (always available)
+    const dashboardData = await $fetch('/api/analytics/dashboard')
     dashboard.value = dashboardData
     
-    // Count vehicles by status
-    const vehicleStatusCount = { available: 0, onTrip: 0, inShop: 0, retired: 0 }
-    vehicles.forEach((v: any) => {
-      if (v.status === 'AVAILABLE') vehicleStatusCount.available++
-      else if (v.status === 'ON_TRIP') vehicleStatusCount.onTrip++
-      else if (v.status === 'IN_SHOP') vehicleStatusCount.inShop++
-      else if (v.status === 'RETIRED') vehicleStatusCount.retired++
-    })
-    vehiclesByStatus.value = vehicleStatusCount
+    // Fetch vehicles (may fail for some roles)
+    try {
+      const vehicles = await $fetch<any[]>('/api/vehicles')
+      const vehicleStatusCount = { available: 0, onTrip: 0, inShop: 0, retired: 0 }
+      vehicles.forEach((v: any) => {
+        if (v.status === 'AVAILABLE') vehicleStatusCount.available++
+        else if (v.status === 'ON_TRIP') vehicleStatusCount.onTrip++
+        else if (v.status === 'IN_SHOP') vehicleStatusCount.inShop++
+        else if (v.status === 'RETIRED') vehicleStatusCount.retired++
+      })
+      vehiclesByStatus.value = vehicleStatusCount
+    } catch {
+      // Use dashboard data as fallback
+      vehiclesByStatus.value = {
+        available: dashboardData.totalVehicles - dashboardData.activeFleet - dashboardData.maintenanceAlerts,
+        onTrip: dashboardData.activeFleet,
+        inShop: dashboardData.maintenanceAlerts,
+        retired: 0
+      }
+    }
     
-    // Count drivers by status
-    const driverStatusCount = { onDuty: 0, offDuty: 0, suspended: 0 }
-    drivers.forEach((d: any) => {
-      if (d.status === 'ON_DUTY') driverStatusCount.onDuty++
-      else if (d.status === 'OFF_DUTY') driverStatusCount.offDuty++
-      else if (d.status === 'SUSPENDED') driverStatusCount.suspended++
-    })
-    driversByStatus.value = driverStatusCount
+    // Fetch drivers (may fail for some roles)
+    try {
+      const drivers = await $fetch<any[]>('/api/drivers')
+      const driverStatusCount = { onDuty: 0, offDuty: 0, suspended: 0 }
+      drivers.forEach((d: any) => {
+        if (d.status === 'ON_DUTY') driverStatusCount.onDuty++
+        else if (d.status === 'OFF_DUTY') driverStatusCount.offDuty++
+        else if (d.status === 'SUSPENDED') driverStatusCount.suspended++
+      })
+      driversByStatus.value = driverStatusCount
+    } catch {
+      // Use dashboard data as fallback
+      driversByStatus.value = {
+        onDuty: dashboardData.totalDrivers,
+        offDuty: 0,
+        suspended: 0
+      }
+    }
     
   } catch (e) {
     console.error(e)
