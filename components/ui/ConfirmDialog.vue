@@ -1,7 +1,8 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click.self="cancel">
+  <ClientOnly>
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="isOpen" class="modal-overlay" @click.self="cancel">
         <div class="modal-content max-w-sm">
           <!-- Icon -->
           <div class="flex justify-center mb-4">
@@ -41,6 +42,7 @@
       </div>
     </Transition>
   </Teleport>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">

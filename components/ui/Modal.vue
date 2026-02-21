@@ -1,30 +1,3 @@
-<template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="modelValue" class="modal-overlay" @click.self="close">
-        <div :class="['modal-content', sizeClass]">
-          <!-- Header -->
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-semibold">{{ title }}</h2>
-            <button 
-              @click="close" 
-              class="p-2 -mr-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              <svg class="w-5 h-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Content -->
-          <slot />
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
   modelValue: boolean
@@ -53,25 +26,115 @@ function close() {
 }
 
 // Close on escape key
-onMounted(() => {
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.modelValue) {
-      close()
-    }
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && props.modelValue) {
+    close()
   }
-  window.addEventListener('keydown', handleEscape)
-  onUnmounted(() => window.removeEventListener('keydown', handleEscape))
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
+<template>
+  <ClientOnly>
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="modelValue" class="modal-overlay">
+          <div class="modal-backdrop" @click="close" />
+          <div :class="['modal-panel', sizeClass]">
+            <!-- Header -->
+            <div class="modal-header">
+              <h2 class="text-xl font-semibold">{{ title }}</h2>
+              <button 
+                @click="close" 
+                class="modal-close-btn"
+              >
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="modal-body">
+              <slot />
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </ClientOnly>
+</template>
+
 <style scoped>
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  position: relative;
+  width: 100%;
+  background: hsl(var(--card));
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 1.5rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.modal-close-btn {
+  padding: 0.5rem;
+  margin: -0.5rem;
+  margin-right: -0.5rem;
+  border-radius: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  transition: all 150ms ease;
+}
+
+.modal-close-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.modal-body {
+  /* Content styles */
+}
+
+/* Transition animations */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 200ms ease;
 }
 
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
+.modal-enter-active .modal-panel,
+.modal-leave-active .modal-panel {
   transition: transform 200ms ease, opacity 200ms ease;
 }
 
@@ -80,13 +143,9 @@ onMounted(() => {
   opacity: 0;
 }
 
-.modal-enter-from .modal-content {
-  transform: translate(-50%, -50%) scale(0.95);
-  opacity: 0;
-}
-
-.modal-leave-to .modal-content {
-  transform: translate(-50%, -50%) scale(0.95);
+.modal-enter-from .modal-panel,
+.modal-leave-to .modal-panel {
+  transform: scale(0.95);
   opacity: 0;
 }
 </style>

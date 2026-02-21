@@ -1,6 +1,7 @@
 <template>
-  <Teleport to="body">
-    <div class="toast-container">
+  <ClientOnly>
+    <Teleport to="body">
+      <div class="toast-container">
       <TransitionGroup name="toast">
         <div
           v-for="toast in toasts"
@@ -27,6 +28,7 @@
       </TransitionGroup>
     </div>
   </Teleport>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
