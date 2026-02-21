@@ -6,6 +6,12 @@ const PUBLIC_PATHS = ['/api/auth/login', '/api/auth/register']
 export default defineEventHandler(async (event) => {
   const path = event.path
 
+  // Only protect /api/ routes, not frontend pages
+  if (!path.startsWith('/api/')) {
+    return
+  }
+
+  // Allow public auth endpoints
   if (PUBLIC_PATHS.some(p => path.startsWith(p))) {
     return
   }
