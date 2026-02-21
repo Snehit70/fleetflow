@@ -153,10 +153,10 @@
       </table>
     </div>
 
-    <!-- Add/Edit Slideover -->
-    <Slideover v-model="showModal" :title="editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'">
+    <!-- Add/Edit Modal -->
+    <Modal v-model="showModal" :title="editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'" size="lg">
       <form @submit.prevent="handleSubmit">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium mb-2">Vehicle Name</label>
             <input v-model="form.name" type="text" required class="input" placeholder="e.g., Van-05" />
@@ -213,7 +213,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex gap-3 justify-end mt-6 pt-6 border-t border-border">
           <button type="button" @click="showModal = false" class="btn-secondary btn-md">
             Cancel
           </button>
@@ -226,7 +226,7 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
 
     <!-- Delete Confirmation Dialog -->
     <ConfirmDialog

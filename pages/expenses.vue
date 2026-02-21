@@ -180,10 +180,10 @@
       </button>
     </div>
 
-    <!-- Add Fuel Log Slideover -->
-    <Slideover v-model="showFuelModal" title="Add Fuel Log">
+    <!-- Add Fuel Log Modal -->
+    <Modal size="lg" v-model="showFuelModal" title="Add Fuel Log">
       <form @submit.prevent="handleFuelSubmit">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium mb-2">Vehicle</label>
             <select v-model="fuelForm.vehicleId" required class="select">
@@ -217,7 +217,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex mt-6 pt-6 border-t border-border gap-3 justify-end">
           <button type="button" @click="showFuelModal = false" class="btn-secondary btn-md">Cancel</button>
           <button type="submit" class="btn-primary btn-md" :disabled="savingFuel">
             <svg v-if="savingFuel" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -228,12 +228,12 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
 
-    <!-- Add Expense Slideover -->
-    <Slideover v-model="showExpenseModal" title="Add Expense">
+    <!-- Add Expense Modal -->
+    <Modal size="lg" v-model="showExpenseModal" title="Add Expense">
       <form @submit.prevent="handleExpenseSubmit">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium mb-2">Vehicle</label>
             <select v-model="expenseForm.vehicleId" required class="select">
@@ -271,7 +271,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex mt-6 pt-6 border-t border-border gap-3 justify-end">
           <button type="button" @click="showExpenseModal = false" class="btn-secondary btn-md">Cancel</button>
           <button type="submit" class="btn-primary btn-md" :disabled="savingExpense">
             <svg v-if="savingExpense" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -282,7 +282,7 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
   </div>
 </template>
 

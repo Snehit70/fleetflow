@@ -163,10 +163,10 @@
       </table>
     </div>
 
-    <!-- Add/Edit Slideover -->
-    <Slideover v-model="showModal" :title="editingDriver ? 'Edit Driver' : 'Add Driver'">
+    <!-- Add/Edit Modal -->
+    <Modal size="lg" v-model="showModal" :title="editingDriver ? 'Edit Driver' : 'Add Driver'">
       <form @submit.prevent="handleSubmit">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium mb-2">Full Name</label>
             <input v-model="form.name" type="text" required class="input" placeholder="e.g., Alex Johnson" />
@@ -230,7 +230,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex mt-6 pt-6 border-t border-border gap-3 justify-end">
           <button type="button" @click="showModal = false" class="btn-secondary btn-md">
             Cancel
           </button>
@@ -243,7 +243,7 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
   </div>
 </template>
 

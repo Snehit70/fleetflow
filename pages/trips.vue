@@ -168,10 +168,10 @@
       </table>
     </div>
 
-    <!-- Create Trip Slideover -->
-    <Slideover v-model="showAddModal" title="Create Trip">
+    <!-- Create Trip Modal -->
+    <Modal size="lg" v-model="showAddModal" title="Create Trip">
       <form @submit.prevent="handleSubmit">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <!-- Vehicle Selection -->
           <div>
             <label class="block text-sm font-medium mb-2">Vehicle</label>
@@ -262,7 +262,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex mt-6 pt-6 border-t border-border gap-3 justify-end">
           <button type="button" @click="showAddModal = false" class="btn-secondary btn-md">
             Cancel
           </button>
@@ -279,12 +279,12 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
 
-    <!-- Complete Trip Slideover -->
-    <Slideover v-model="showCompleteModal" title="Complete Trip">
+    <!-- Complete Trip Modal -->
+    <Modal size="lg" v-model="showCompleteModal" title="Complete Trip">
       <form @submit.prevent="handleComplete">
-        <div class="space-y-5 p-6">
+        <div class="space-y-5">
           <div class="card p-4 bg-muted/50">
             <h4 class="font-medium mb-2">Trip Details</h4>
             <p class="text-sm text-muted-foreground">
@@ -310,7 +310,7 @@
           </div>
         </div>
         
-        <div class="p-6 border-t border-border flex gap-3 justify-end">
+        <div class="flex mt-6 pt-6 border-t border-border gap-3 justify-end">
           <button type="button" @click="showCompleteModal = false" class="btn-secondary btn-md">
             Cancel
           </button>
@@ -323,7 +323,7 @@
           </button>
         </div>
       </form>
-    </Slideover>
+    </Modal>
   </div>
 </template>
 
