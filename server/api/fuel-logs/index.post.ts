@@ -26,6 +26,10 @@ export default defineEventHandler(async (event) => {
 
   if (!vehicle) throw createError({ statusCode: 404, message: 'Vehicle not found' })
 
+  if (parsedOdometer < vehicle.odometer) {
+    throw createError({ statusCode: 400, message: `Odometer (${parsedOdometer}) cannot be less than vehicle's current odometer (${vehicle.odometer})` })
+  }
+
   const parsedDate = date ? new Date(date) : new Date()
   if (date && isNaN(parsedDate.getTime())) {
     throw createError({ statusCode: 400, message: 'Invalid date format' })
