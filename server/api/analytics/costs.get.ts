@@ -1,5 +1,6 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'])
   const currentMonth = new Date()
@@ -24,12 +25,15 @@ export default defineEventHandler(async (event) => {
     _sum: { amount: true }
   })
 
-  const total = (fuelCost._sum.cost || 0) + (maintenanceCost._sum.cost || 0) + (otherExpenses._sum.amount || 0)
+  const fuelTotal = fuelCost._sum.cost || 0
+  const maintenanceTotal = maintenanceCost._sum.cost || 0
+  const otherTotal = otherExpenses._sum.amount || 0
+  const total = fuelTotal + maintenanceTotal + otherTotal
 
   return {
-    fuel: fuelCost._sum.cost || 0,
-    maintenance: maintenanceCost._sum.cost || 0,
-    other: otherExpenses._sum.amount || 0,
+    fuel: fuelTotal,
+    maintenance: maintenanceTotal,
+    other: otherTotal,
     total
   }
 })

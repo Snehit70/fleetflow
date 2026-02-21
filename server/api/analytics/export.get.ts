@@ -1,5 +1,6 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'FINANCIAL_ANALYST'])
   // Get fuel efficiency data
@@ -17,14 +18,16 @@ export default defineEventHandler(async (event) => {
   const efficiencyData = fuelLogs.map(log => {
     const vehicle = vehicles.find(v => v.id === log.vehicleId)
     const distance = log._max.odometer - log._min.odometer
+    const liters = log._sum.liters || 0
+    const cost = log._sum.cost || 0
     return {
       vehicleName: vehicle?.name || 'Unknown',
       licensePlate: vehicle?.licensePlate || '',
       vehicleType: vehicle?.type || '',
       distanceKm: distance,
-      litersUsed: log._sum.liters || 0,
-      fuelCost: log._sum.cost || 0,
-      avgEfficiencyKmPerL: distance > 0 && log._sum.liters > 0 ? (distance / log._sum.liters).toFixed(2) : 0
+      litersUsed: liters,
+      fuelCost: cost,
+      avgEfficiencyKmPerL: distance > 0 && liters > 0 ? (distance / liters).toFixed(2) : '0'
     }
   }).filter(e => e.distanceKm > 0)
 

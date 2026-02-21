@@ -24,6 +24,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'endOdometer is required' })
   }
 
+  if (trip.startOdometer === null) {
+    throw createError({ statusCode: 400, message: 'Trip has no startOdometer recorded' })
+  }
+
   if (endOdometer <= trip.startOdometer) {
     throw createError({ statusCode: 400, message: 'endOdometer must be greater than startOdometer' })
   }

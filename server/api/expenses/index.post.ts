@@ -1,12 +1,13 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'FINANCIAL_ANALYST'])
   const body = await readBody(event)
 
   const { vehicleId, category, amount, description, date } = body
 
-  if (!vehicleId || !category || !amount) {
+  if (!vehicleId || !category || amount == null) {
     throw createError({ statusCode: 400, message: 'Missing required fields: vehicleId, category, amount' })
   }
 

@@ -100,10 +100,10 @@ model Trip {
   updatedAt        DateTime   @updatedAt
 
   vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   driverId String
-  driver   Driver @relation(fields: [driverId], references: [id])
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
 
 model Maintenance {
@@ -115,7 +115,7 @@ model Maintenance {
   createdAt   DateTime @default(now())
 
   vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 model FuelLog {
@@ -127,7 +127,7 @@ model FuelLog {
   createdAt DateTime @default(now())
 
   vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
@@ -139,5 +139,5 @@ model Expense {
   createdAt   DateTime @default(now())
 
   vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }

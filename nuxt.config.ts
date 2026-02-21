@@ -1,12 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
   modules: ['@nuxtjs/tailwindcss'],
 
   runtimeConfig: {
-    jwtSecret: process.env.JWT_SECRET || 'fleetflow-secret-key-change-in-production',
+    jwtSecret: process.env.JWT_SECRET || '',
   },
 
   tailwindcss: {

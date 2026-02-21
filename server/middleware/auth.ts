@@ -1,7 +1,15 @@
 import { prisma } from '#server/utils/prisma'
 import { verifyToken } from '#server/utils/jwt'
 
+const PUBLIC_PATHS = ['/api/auth/login', '/api/auth/register']
+
 export default defineEventHandler(async (event) => {
+  const path = event.path
+
+  if (PUBLIC_PATHS.some(p => path.startsWith(p))) {
+    return
+  }
+
   const token = getCookie(event, 'auth') || getHeader(event, 'authorization')?.replace('Bearer ', '')
 
   if (!token) {

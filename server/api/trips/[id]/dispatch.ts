@@ -33,13 +33,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Driver license has expired' })
   }
 
-  // Check license category
+  // Check license category (supports comma-separated values like "VAN, TRUCK")
+  const driverCategories = trip.driver.licenseCategory.split(',').map(c => c.trim())
   const categoryMap: Record<string, string[]> = {
     BIKE: ['BIKE'],
     VAN: ['BIKE', 'VAN'],
     TRUCK: ['BIKE', 'VAN', 'TRUCK']
   }
-  if (!categoryMap[trip.driver.licenseCategory]?.includes(trip.vehicle.type)) {
+  const canDrive = driverCategories.some(cat => categoryMap[cat]?.includes(trip.vehicle.type))
+  if (!canDrive) {
     throw createError({ statusCode: 400, message: `Driver's license (${trip.driver.licenseCategory}) cannot operate ${trip.vehicle.type}` })
   }
 

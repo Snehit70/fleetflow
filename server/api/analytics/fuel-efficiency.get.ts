@@ -1,5 +1,6 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'])
   // Get fuel logs grouped by vehicle with odometer tracking
@@ -45,13 +46,14 @@ export default defineEventHandler(async (event) => {
   const efficiencyData = fuelLogs.map(log => {
     const vehicle = vehicles.find(v => v.id === log.vehicleId)
     const distance = log._max.odometer - log._min.odometer
-    const efficiency = distance > 0 && log._sum.liters > 0 ? distance / log._sum.liters : 0
+    const liters = log._sum.liters || 0
+    const efficiency = distance > 0 && liters > 0 ? distance / liters : 0
 
     return {
       vehicleId: log.vehicleId,
       vehicleName: vehicle?.name || 'Unknown',
       vehicleType: vehicle?.type || 'Unknown',
-      liters: log._sum.liters || 0,
+      liters: liters,
       distance: distance || 0,
       efficiency: Math.round(efficiency * 100) / 100
     }

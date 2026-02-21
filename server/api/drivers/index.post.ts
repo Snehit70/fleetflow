@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
       licenseExpiry: new Date(body.licenseExpiry),
       licenseCategory: body.licenseCategory,
       status: body.status || 'ON_DUTY',
-      safetyScore: body.safetyScore || 100
+      safetyScore: body.safetyScore ?? 100
     }
   })
 
