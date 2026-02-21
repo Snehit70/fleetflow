@@ -39,7 +39,7 @@ Demo data for hackathon presentation. This data demonstrates all features and ed
 | Name | Email | License # | Category | Expiry | Status | Safety Score |
 |------|-------|-----------|----------|--------|--------|--------------|
 | Alex Kumar | alex@fleetflow.com | DL-GJ-2020-001234 | VAN | 2027-06-15 | ON_DUTY | 95 |
-| Priya Sharma | priya@fleetflow.com | DL-GJ-2019-005678 | VAN, TRUCK | 2026-12-31 | ON_TRIP | 88 |
+| Priya Sharma | priya@fleetflow.com | DL-GJ-2019-005678 | VAN, TRUCK | 2026-12-31 | ON_DUTY | 88 |
 | Raj Patel | raj@fleetflow.com | DL-GJ-2021-009012 | TRUCK | 2026-03-10 | ON_DUTY | 92 |
 | Sara Singh | sara@fleetflow.com | DL-GJ-2018-003456 | VAN | 2026-02-15 | OFF_DUTY | 85 |
 | Mike Johnson | mike@fleetflow.com | DL-GJ-2022-007890 | BIKE | 2027-09-20 | ON_DUTY | 98 |
@@ -47,7 +47,7 @@ Demo data for hackathon presentation. This data demonstrates all features and ed
 ### Edge Cases Demonstrated
 - **Raj Patel**: License expiring in ~17 days (warning)
 - **Sara Singh**: License EXPIRED (cannot be assigned)
-- **Priya Sharma**: Currently on trip (ON_TRIP status)
+- **Priya Sharma**: Currently on active trip (Van-02 is ON_TRIP)
 
 ---
 
@@ -133,21 +133,21 @@ Demo data for hackathon presentation. This data demonstrates all features and ed
 
 ## Seed Script Location
 
-```
+```text
 prisma/seed.ts
 ```
 
 ## Running Seed
 
 ```bash
-npx prisma db seed
+bunx prisma db seed
 ```
 
 ## Resetting Database
 
 ```bash
-npx prisma db push --force-reset
-npx prisma db seed
+bunx prisma db push --force-reset
+bunx prisma db seed
 ```
 
 ---

@@ -9,7 +9,7 @@ A centralized, rule-based digital hub that replaces inefficient manual logbooks 
 | Layer | Technology |
 |-------|------------|
 | Framework | Nuxt 3 (Full-stack) |
-| Frontend | Vue 3 + shadcn-vue + Tailwind CSS |
+| Frontend | Vue 3 + Tailwind CSS |
 | Database | SQLite + Prisma ORM |
 | Authentication | JWT |
 | Language | TypeScript |
@@ -29,14 +29,14 @@ A centralized, rule-based digital hub that replaces inefficient manual logbooks 
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Setup database
-npx prisma db push
-npx prisma db seed
+bunx prisma db push
+bunx prisma db seed
 
 # Run development server
-npm run dev
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)

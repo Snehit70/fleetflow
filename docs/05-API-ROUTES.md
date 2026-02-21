@@ -1,13 +1,13 @@
 # FleetFlow - API Routes
 
 ## Base URL
-```
+```text
 http://localhost:3000/api
 ```
 
 ## Authentication
 All routes except `/api/auth/login` and `/api/auth/register` require JWT token in header:
-```
+```http
 Authorization: Bearer <token>
 ```
 
@@ -45,15 +45,14 @@ Authenticate user and receive JWT token.
 ---
 
 ### POST `/api/auth/register`
-Create new user account.
+Create new user account. New users are always created with DISPATCHER role.
 
 **Request:**
 ```json
 {
   "email": "user@fleetflow.com",
   "password": "password123",
-  "name": "New User",
-  "role": "DISPATCHER"
+  "name": "New User"
 }
 ```
 
@@ -211,7 +210,7 @@ List all drivers.
       "status": "ON_DUTY",
       "safetyScore": 95,
       "isLicenseValid": true,
-      "isExpiringsSoon": false
+      "isExpiringSoon": false
     }
   ],
   "total": 1

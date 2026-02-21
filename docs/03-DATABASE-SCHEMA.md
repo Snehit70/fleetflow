@@ -2,7 +2,7 @@
 
 ## Entity Relationship Diagram (Text)
 
-```
+```text
 ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
 │    USER      │       │   VEHICLE    │       │    DRIVER    │
 ├──────────────┤       ├──────────────┤       ├──────────────┤
@@ -52,6 +52,7 @@
 ## Enums
 
 ### VehicleStatus
+
 | Value | Description |
 |-------|-------------|
 | `AVAILABLE` | Ready for dispatch |
@@ -60,6 +61,7 @@
 | `RETIRED` | Out of service permanently |
 
 ### VehicleType
+
 | Value | Description |
 |-------|-------------|
 | `TRUCK` | Heavy goods vehicle (2000+ kg) |
@@ -67,6 +69,7 @@
 | `BIKE` | Light delivery (up to 50 kg) |
 
 ### DriverStatus
+
 | Value | Description |
 |-------|-------------|
 | `ON_DUTY` | Available for assignment |
@@ -74,6 +77,7 @@
 | `SUSPENDED` | Cannot be assigned (compliance issue) |
 
 ### TripStatus
+
 | Value | Description |
 |-------|-------------|
 | `DRAFT` | Created but not dispatched |
@@ -82,6 +86,7 @@
 | `CANCELLED` | Aborted |
 
 ### UserRole
+
 | Value | Access Level |
 |-------|--------------|
 | `MANAGER` | Full access to all features |
