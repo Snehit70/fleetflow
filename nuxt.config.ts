@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss'],
 
   runtimeConfig: {
-    jwtSecret: process.env.JWT_SECRET || '',
+    jwtSecret: process.env.JWT_SECRET,
   },
 
   tailwindcss: {
