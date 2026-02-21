@@ -33,14 +33,22 @@ export default defineEventHandler(async (event) => {
 
   // Build CSV
   const headers = ['Vehicle Name', 'License Plate', 'Type', 'Distance (km)', 'Liters Used', 'Fuel Cost ($)', 'Efficiency (km/L)']
+  const escapeCsvField = (value: string | number): string => {
+    const str = String(value)
+    if (/^[=+\-@\t\r]/.test(str)) {
+      return "'" + str.replace(/"/g, '""')
+    }
+    return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str
+  }
+
   const rows = efficiencyData.map(row => [
-    row.vehicleName,
-    row.licensePlate,
-    row.vehicleType,
-    row.distanceKm,
-    row.litersUsed,
-    row.fuelCost.toFixed(2),
-    row.avgEfficiencyKmPerL
+    escapeCsvField(row.vehicleName),
+    escapeCsvField(row.licensePlate),
+    escapeCsvField(row.vehicleType),
+    escapeCsvField(row.distanceKm),
+    escapeCsvField(row.litersUsed),
+    escapeCsvField(row.fuelCost.toFixed(2)),
+    escapeCsvField(row.avgEfficiencyKmPerL)
   ])
 
   const csvContent = [

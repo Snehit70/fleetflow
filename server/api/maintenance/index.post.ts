@@ -18,6 +18,10 @@ export default defineEventHandler(async (event) => {
 
   if (!vehicle) throw createError({ statusCode: 404, message: 'Vehicle not found' })
 
+  if (vehicle.status === 'ON_TRIP') {
+    throw createError({ statusCode: 400, message: 'Cannot log maintenance for vehicle currently on a trip. Complete the trip first.' })
+  }
+
   // Create maintenance record and update vehicle status in transaction
   await prisma.$transaction(async (tx) => {
     await tx.maintenance.create({

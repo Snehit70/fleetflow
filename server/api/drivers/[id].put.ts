@@ -7,17 +7,19 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
 
+  const { name, email, phone, licenseNumber, licenseExpiry, licenseCategory, status, safetyScore } = body
+
   const driver = await prisma.driver.update({
     where: { id },
     data: {
-      name: body.name,
-      email: body.email,
-      phone: body.phone || null,
-      licenseNumber: body.licenseNumber,
-      licenseExpiry: body.licenseExpiry ? new Date(body.licenseExpiry) : undefined,
-      licenseCategory: body.licenseCategory,
-      status: body.status,
-      safetyScore: body.safetyScore
+      name,
+      email,
+      phone: phone || null,
+      licenseNumber,
+      licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : undefined,
+      licenseCategory,
+      status,
+      safetyScore
     }
   })
 
