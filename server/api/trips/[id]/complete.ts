@@ -1,8 +1,10 @@
 import { PrismaClient } from '~/lib/generated/prisma/client'
+import { requireRole } from '~/server/utils/api-auth'
 
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
+  requireRole(event, ['MANAGER', 'DISPATCHER'])
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, message: 'Trip ID required' })
 

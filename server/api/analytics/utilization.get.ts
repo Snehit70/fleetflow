@@ -1,8 +1,10 @@
 import { PrismaClient } from '~/lib/generated/prisma/client'
+import { requireRole } from '~/server/utils/api-auth'
 
 const prisma = new PrismaClient()
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireRole(event, ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'])
   // Fleet utilization: vehicles by status
   const statusCounts = await prisma.vehicle.groupBy({
     by: ['status'],

@@ -68,15 +68,19 @@
 
 - [x] Analytics API routes
 - [x] Analytics page (charts)
-- [~] CSV export
+- [x] CSV export
 
 ---
 
 ## Phase 7: Polish
 
-- [ ] Fix bugs
-- [ ] Improve UI
-- [ ] Test all workflows
+- [ ] Test all CRUD workflows
+- [ ] Test auth/permissions
+- [ ] Add route to analytics page in sidebar
+- [ ] Ensure all pages are accessible via navigation
+- [ ] Verify all business rules are enforced
+- [ ] Check responsive design
+- [ ] Final testing
 
 ---
 
