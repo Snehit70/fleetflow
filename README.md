@@ -27,16 +27,6 @@ A centralized, rule-based digital hub that optimizes delivery fleet lifecycle, m
 - **Analytics** - Fuel efficiency charts, cost breakdown, ROI calculations, CSV exports
 - **RBAC** - Role-based access control (Manager, Dispatcher, Safety Officer, Financial Analyst)
 
-## Screenshots
-
-| Dashboard | Vehicles |
-|-----------|----------|
-| Real-time KPIs and fleet overview | Manage your fleet assets |
-
-| Drivers | Trips |
-|---------|-------|
-| License compliance & safety tracking | Dispatch and complete deliveries |
-
 ## Quick Start
 
 ```bash
