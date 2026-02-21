@@ -57,7 +57,7 @@
 
 ## Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                      NUXT 3 APP                         │
 ├─────────────────────────────────────────────────────────┤
@@ -105,14 +105,19 @@
 
 | Tool | Purpose |
 |------|---------|
-| **pnpm** | Package manager (faster than npm) |
+| **bun** | Package manager and runtime |
 | **Prisma Studio** | GUI for database inspection |
 | **Vue DevTools** | Browser extension for debugging |
 | **TypeScript** | Type checking and intellisense |
 
 ## Deployment (Post-Hackathon)
 
-For the hackathon, we'll run locally. Future deployment options:
-- **Vercel** - Best for Nuxt 3
-- **Netlify** - Alternative option
-- **Railway** - If we need hosted database
+For the hackathon, we'll run locally. 
+
+**Note:** SQLite is a file-based database and requires persistent storage. It works on local machines and platforms like Railway, Render, or Fly.io. For serverless platforms (Vercel, Netlify), switch Prisma to PostgreSQL (one-line provider change: `provider = "postgresql"`).
+
+Deployment options:
+- **Railway** - Supports SQLite with persistent storage
+- **Render** - Supports SQLite with persistent disk
+- **Fly.io** - Supports SQLite with volumes
+- **Vercel/Netlify** - Requires PostgreSQL (change Prisma provider)

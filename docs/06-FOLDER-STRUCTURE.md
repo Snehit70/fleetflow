@@ -2,7 +2,7 @@
 
 ## Project Tree
 
-```
+```text
 fleetflow/
 ├── .gitignore                # Git ignore rules
 ├── .env                      # Environment variables (not committed)
