@@ -4,7 +4,7 @@
 
 A centralized, rule-based digital hub that optimizes delivery fleet lifecycle, monitors driver safety, and tracks financial performance.
 
-![Login Screen](/login-screenshot.png)
+![Login Screen](./public/login-screenshot.png)
 
 ## Tech Stack
 
