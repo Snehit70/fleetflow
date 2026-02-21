@@ -76,6 +76,15 @@
             <label class="block text-sm font-medium mb-1">Region</label>
             <input v-model="form.region" type="text" class="w-full px-3 py-2 border rounded" />
           </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Status</label>
+            <select v-model="form.status" class="w-full px-3 py-2 border rounded">
+              <option value="AVAILABLE">Available</option>
+              <option value="IN_SHOP">In Shop</option>
+              <option value="RETIRED">Retired</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Note: ON_TRIP status is managed automatically by trips</p>
+          </div>
         </div>
         <div class="p-6 border-t flex gap-2 justify-end">
           <UButton type="button" variant="soft" @click="showAddModal = false">Cancel</UButton>
@@ -105,7 +114,8 @@ const form = ref({
   type: 'VAN',
   maxCapacity: 0,
   odometer: 0,
-  region: ''
+  region: '',
+  status: 'AVAILABLE'
 })
 const saving = ref(false)
 

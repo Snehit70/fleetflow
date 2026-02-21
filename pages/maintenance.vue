@@ -2,7 +2,7 @@
   <div class="p-6">
     <PageHeader title="Maintenance" subtitle="Track vehicle maintenance">
       <template #actions>
-        <UButton color="primary" @click="showAddModal = true">Log Maintenance</UButton>
+        <UButton v-if="canEdit" color="primary" @click="showAddModal = true">Log Maintenance</UButton>
       </template>
     </PageHeader>
 
@@ -15,7 +15,7 @@
             <span class="font-medium">{{ v.name }}</span>
             <span class="text-gray-500 ml-2">({{ v.licensePlate }})</span>
           </div>
-          <UButton size="xs" color="green" @click="markBackInService(v.id)">Back in Service</UButton>
+          <UButton v-if="canEdit" size="xs" color="green" @click="markBackInService(v.id)">Back in Service</UButton>
         </div>
       </div>
     </div>
@@ -90,6 +90,8 @@ definePageMeta({
   roles: ['MANAGER', 'FINANCIAL_ANALYST']
 })
 
+const { user } = useAuth()
+
 const maintenanceRecords = ref<any[]>([])
 const vehicles = ref<any[]>([])
 const loading = ref(true)
@@ -129,6 +131,8 @@ async function loadVehicles() {
 const inShopVehicles = computed(() => {
   return vehicles.value.filter(v => v.status === 'IN_SHOP')
 })
+
+const canEdit = computed(() => user.value?.role === 'MANAGER')
 
 async function markBackInService(vehicleId: string) {
   if (!confirm('Mark this vehicle as back in service?')) return

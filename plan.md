@@ -16,36 +16,25 @@
 - [x] Phase 5: Financial Features (Maintenance, Expenses, Fuel Logs)
 - [x] Phase 6: Analytics (API, Charts, CSV Export)
 - [x] Phase 7: RBAC & Security
+- [x] Phase 8: Bug Fixes (Nuxt 4 imports, Prisma singleton)
 
 ---
 
-## Phase 8: Bug Fixes & Polish
+## Phase 9: Testing
 
-- [~] Fix build errors (Nuxt 4 import paths - use #server alias)
-- [ ] Fix role middleware for pages
+- [~] Run dev server and test manually
 - [ ] Test all CRUD workflows end-to-end
-- [ ] Test auth/permissions
+- [ ] Test auth/permissions flow
 - [ ] Verify all business rules are enforced
-- [ ] Run dev server and test manually
 
 ---
 
-## Phase 9: Submission
+## Phase 10: Submission
 
 - [ ] Final commit
 - [ ] Update README with screenshots
 - [ ] Record demo video
 - [ ] Submit video link
-
----
-
-## Known Issues
-
-1. **Build Error**: Import paths using `~/server/utils` resolve incorrectly in Nuxt 4
-   - Fix: Use `#server/utils` alias instead
-
-2. **Route Middleware**: Can't use server utilities directly in route middleware
-   - Fix: Use client-side cookie check via useAuth composable
 
 ---
 

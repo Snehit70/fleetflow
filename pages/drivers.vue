@@ -2,7 +2,7 @@
   <div class="p-6">
     <PageHeader title="Drivers" subtitle="Manage drivers and licenses">
       <template #actions>
-        <UButton color="primary" @click="showAddModal = true">Add Driver</UButton>
+        <UButton v-if="canEdit" color="primary" @click="showAddModal = true">Add Driver</UButton>
       </template>
     </PageHeader>
 
@@ -45,8 +45,11 @@
               </UBadge>
             </td>
             <td class="px-6 py-4">
-              <UButton size="xs" variant="ghost" @click="editDriver(driver)">Edit</UButton>
-              <UButton size="xs" variant="ghost" color="red" @click="deleteDriver(driver.id)">Delete</UButton>
+              <template v-if="canEdit">
+                <UButton size="xs" variant="ghost" @click="editDriver(driver)">Edit</UButton>
+                <UButton size="xs" variant="ghost" color="red" @click="deleteDriver(driver.id)">Delete</UButton>
+              </template>
+              <span v-else class="text-gray-400 text-sm">Read only</span>
             </td>
           </tr>
         </tbody>
@@ -114,6 +117,8 @@ definePageMeta({
   roles: ['MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']
 })
 
+const { user } = useAuth()
+
 const drivers = ref<any[]>([])
 const loading = ref(true)
 const showAddModal = ref(false)
@@ -129,6 +134,8 @@ const form = ref({
   safetyScore: 100
 })
 const saving = ref(false)
+
+const canEdit = computed(() => ['MANAGER', 'SAFETY_OFFICER'].includes(user.value?.role || ''))
 
 onMounted(async () => {
   await loadDrivers()

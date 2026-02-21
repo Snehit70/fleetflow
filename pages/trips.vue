@@ -2,7 +2,7 @@
   <div class="p-6">
     <PageHeader title="Trips" subtitle="Manage trip assignments and tracking">
       <template #actions>
-        <UButton color="primary" @click="showAddModal = true">New Trip</UButton>
+        <UButton v-if="canManageTrips" color="primary" @click="showAddModal = true">New Trip</UButton>
       </template>
     </PageHeader>
 
@@ -35,9 +35,12 @@
               </UBadge>
             </td>
             <td class="px-6 py-4">
-              <UButton v-if="trip.status === 'DRAFT'" size="xs" variant="ghost" color="green" @click="dispatchTrip(trip.id)">Dispatch</UButton>
-              <UButton v-if="trip.status === 'DISPATCHED'" size="xs" variant="ghost" color="blue" @click="showCompleteModal(trip)">Complete</UButton>
-              <UButton v-if="['DRAFT', 'DISPATCHED'].includes(trip.status)" size="xs" variant="ghost" color="red" @click="cancelTrip(trip.id)">Cancel</UButton>
+              <template v-if="canManageTrips">
+                <UButton v-if="trip.status === 'DRAFT'" size="xs" variant="ghost" color="green" @click="dispatchTrip(trip.id)">Dispatch</UButton>
+                <UButton v-if="trip.status === 'DISPATCHED'" size="xs" variant="ghost" color="blue" @click="showCompleteModal(trip)">Complete</UButton>
+                <UButton v-if="['DRAFT', 'DISPATCHED'].includes(trip.status)" size="xs" variant="ghost" color="red" @click="cancelTrip(trip.id)">Cancel</UButton>
+              </template>
+              <span v-else class="text-gray-400 text-sm">Read only</span>
             </td>
           </tr>
         </tbody>
@@ -142,6 +145,8 @@ interface Trip {
   driver?: { id: string; name: string; licenseCategory: string; licenseExpiry: string; status: string }
 }
 
+const { user } = useAuth()
+
 const trips = ref<Trip[]>([])
 const vehicles = ref<any[]>([])
 const drivers = ref<any[]>([])
@@ -163,6 +168,8 @@ const completeForm = ref({
 const saving = ref(false)
 const completing = ref(false)
 const validationError = ref('')
+
+const canManageTrips = computed(() => ['MANAGER', 'DISPATCHER'].includes(user.value?.role || ''))
 
 onMounted(async () => {
   await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
