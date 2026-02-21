@@ -441,11 +441,23 @@ const filteredTrips = computed(() => {
 
 const availableVehicles = computed(() => vehicles.value.filter(v => v.status === 'AVAILABLE'))
 
+function parseDateOnly(dateString: string): Date | null {
+  const parts = dateString.split('-')
+  if (parts.length !== 3) return null
+  const year = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10) - 1
+  const day = parseInt(parts[2], 10)
+  const date = new Date(year, month, day)
+  return isNaN(date.getTime()) ? null : date
+}
+
 const eligibleDrivers = computed(() => {
   const now = new Date()
   return drivers.value.filter(d => {
     if (d.status !== 'ON_DUTY') return false
-    if (new Date(d.licenseExpiry) < now) return false
+    const expiry = parseDateOnly(d.licenseExpiry)
+    if (!expiry) return false
+    if (expiry < now) return false
     return true
   })
 })

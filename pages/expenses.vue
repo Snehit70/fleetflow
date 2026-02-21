@@ -359,7 +359,9 @@ async function loadVehicles() {
 }
 
 function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return 'Invalid date'
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
