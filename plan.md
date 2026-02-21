@@ -22,18 +22,18 @@
 
 ## Phase 2: Authentication
 
-- [ ] Create login API route
-- [ ] Create JWT utilities
-- [ ] Create auth middleware
-- [ ] Create login page
-- [ ] Create useAuth composable
+- [x] Create login API route
+- [x] Create JWT utilities
+- [x] Create auth middleware
+- [x] Create login page
+- [x] Create useAuth composable
 - [ ] Test login flow
 
 ---
 
 ## Phase 3: Layout & Dashboard
 
-- [ ] Create default layout (sidebar + navbar)
+- [~] Create default layout (sidebar + navbar)
 - [ ] Create auth layout (no sidebar)
 - [ ] Build Navbar component
 - [ ] Build Sidebar component
