@@ -105,18 +105,19 @@
                 <span>{{ trip.driver.name }}</span>
               </div>
             </td>
-            <td class="table-cell">
-              <div class="capacity-bar">
-                <div class="capacity-bar-track w-20">
-                  <div 
-                    class="capacity-bar-fill"
-                    :class="getCapacityColor(trip.cargoWeight, trip.vehicle?.maxCapacity || 1000)"
-                    :style="{ width: getCapacityPercentage(trip.cargoWeight, trip.vehicle?.maxCapacity || 1000) + '%' }"
-                  />
-                </div>
-                <span class="capacity-bar-label">{{ trip.cargoWeight }}kg</span>
-              </div>
-            </td>
+             <td class="table-cell">
+               <div v-if="trip.vehicle" class="capacity-bar">
+                 <div class="capacity-bar-track w-20">
+                   <div 
+                     class="capacity-bar-fill"
+                     :class="getCapacityColor(trip.cargoWeight, trip.vehicle.maxCapacity)"
+                     :style="{ width: getCapacityPercentage(trip.cargoWeight, trip.vehicle.maxCapacity) + '%' }"
+                   />
+                 </div>
+                 <span class="capacity-bar-label">{{ trip.cargoWeight }}kg</span>
+               </div>
+               <span v-else class="text-xs text-muted-foreground">No vehicle</span>
+             </td>
             <td class="table-cell">
               <StatusBadge :status="trip.status" />
             </td>
@@ -325,18 +326,30 @@
       </form>
     </Modal>
 
-    <!-- Cancel Trip Confirmation Dialog -->
-    <ConfirmDialog
-      :is-open="showCancelDialog"
-      title="Cancel Trip"
-      message="Are you sure you want to cancel this trip? This action cannot be undone."
-      type="warning"
-      confirm-text="Cancel Trip"
-      :loading="cancelling"
-      @confirm="handleCancelTrip"
-      @cancel="showCancelDialog = false"
-    />
-  </div>
+     <!-- Cancel Trip Confirmation Dialog -->
+     <ConfirmDialog
+       :is-open="showCancelDialog"
+       title="Cancel Trip"
+       message="Are you sure you want to cancel this trip? This action cannot be undone."
+       type="warning"
+       confirm-text="Cancel Trip"
+       :loading="cancelling"
+       @confirm="handleCancelTrip"
+       @cancel="showCancelDialog = false"
+     />
+
+     <!-- Dispatch Trip Confirmation Dialog -->
+     <ConfirmDialog
+       :is-open="showDispatchDialog"
+       title="Dispatch Trip"
+       message="Assign driver and vehicle to this trip? This action cannot be undone."
+       type="info"
+       confirm-text="Dispatch"
+       :loading="dispatching"
+       @confirm="handleDispatch"
+       @cancel="showDispatchDialog = false"
+     />
+   </div>
 </template>
 
 <script setup lang="ts">
@@ -387,11 +400,14 @@ const loading = ref(true)
 const showAddModal = ref(false)
 const showCompleteModal = ref(false)
 const showCancelDialog = ref(false)
+const showDispatchDialog = ref(false)
+const dispatchingTripId = ref<string | null>(null)
 const cancellingTripId = ref<string | null>(null)
 const completingTrip = ref<Trip | null>(null)
 const saving = ref(false)
 const completing = ref(false)
 const cancelling = ref(false)
+const dispatching = ref(false)
 const validationError = ref('')
 const activeTab = ref('all')
 
@@ -467,6 +483,7 @@ async function loadVehicles() {
     vehicles.value = await $fetch('/api/vehicles')
   } catch (e) {
     console.error(e)
+    error('Failed to load vehicles', 'Please refresh the page')
   }
 }
 
@@ -475,6 +492,7 @@ async function loadDrivers() {
     drivers.value = await $fetch('/api/drivers')
   } catch (e) {
     console.error(e)
+    error('Failed to load drivers', 'Please refresh the page')
   }
 }
 
@@ -538,9 +556,22 @@ async function dispatchTrip(id: string) {
 }
 
 async function handleComplete() {
+  if (!completingTrip.value) {
+    error('Error', 'No trip selected for completion.')
+    return
+  }
+  
+  const endOdometer = completeForm.value.endOdometer
+  const startOdometer = completingTrip.value.startOdometer || 0
+  
+  if (endOdometer < startOdometer) {
+    error('Invalid odometer', 'End odometer cannot be less than start odometer.')
+    return
+  }
+  
   completing.value = true
   try {
-    await $fetch(`/api/trips/${completingTrip.value?.id}/complete`, {
+    await $fetch(`/api/trips/${completingTrip.value.id}/complete`, {
       method: 'POST',
       body: completeForm.value
     })
@@ -558,6 +589,29 @@ async function handleComplete() {
 function cancelTrip(id: string) {
   cancellingTripId.value = id
   showCancelDialog.value = true
+}
+
+function dispatchTrip(id: string) {
+  dispatchingTripId.value = id
+  showDispatchDialog.value = true
+}
+
+async function handleDispatch() {
+  if (!dispatchingTripId.value) return
+  
+  dispatching.value = true
+  try {
+    await $fetch(`/api/trips/${dispatchingTripId.value}/dispatch`, { method: 'POST' })
+    success('Trip dispatched', 'Driver and vehicle assigned successfully.')
+    showDispatchDialog.value = false
+    dispatchingTripId.value = null
+    await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
+  } catch (e: any) {
+    console.error(e)
+    error('Error dispatching trip', e.data?.message)
+  } finally {
+    dispatching.value = false
+  }
 }
 
 async function handleCancelTrip() {

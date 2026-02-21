@@ -182,8 +182,8 @@
 
           <div>
             <label class="block text-sm font-medium mb-2">Service Type</label>
-            <select v-model="form.description" class="select">
-              <option value="">Select or type custom</option>
+            <select v-model="form.description" required class="select">
+              <option value="" disabled>Select or type custom</option>
               <option value="Oil Change">Oil Change</option>
               <option value="Tire Rotation">Tire Rotation</option>
               <option value="Brake Service">Brake Service</option>
@@ -192,9 +192,10 @@
               <option value="General Inspection">General Inspection</option>
             </select>
             <input 
-              v-if="!presetDescriptions.includes(form.description)"
+              v-if="form.description && !presetDescriptions.includes(form.description) && form.description.trim() !== ''"
               v-model="form.description" 
               type="text" 
+              required
               class="input mt-2" 
               placeholder="Or enter custom description"
             />
