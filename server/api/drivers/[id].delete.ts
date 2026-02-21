@@ -1,8 +1,5 @@
-import { PrismaClient } from '~/lib/generated/prisma/client'
-import { requireRole } from '~/server/utils/api-auth'
-
-const prisma = new PrismaClient()
-
+import { prisma } from '#server/utils/prisma'
+import { requireRole } from '#server/utils/api-auth'
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'SAFETY_OFFICER'])
   const id = event.context.params?.id

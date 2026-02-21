@@ -1,13 +1,13 @@
-export default defineEventHandler(async (event) => {
-  const user = event.context.user as { role: string } | undefined
-
-  if (!user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { user, isAuthenticated } = useAuth()
+  
+  if (!isAuthenticated.value) {
+    return navigateTo('/login')
   }
-
-  const requiredRoles = event.context.pageMeta?.roles as string[] | undefined
-
-  if (requiredRoles && !requiredRoles.includes(user.role)) {
-    throw createError({ statusCode: 403, message: 'Forbidden' })
+  
+  const requiredRoles = to.meta.roles as string[] | undefined
+  
+  if (requiredRoles && user.value && !requiredRoles.includes(user.value.role)) {
+    return navigateTo('/')
   }
 })

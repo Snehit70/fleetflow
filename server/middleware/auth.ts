@@ -1,5 +1,5 @@
 import { PrismaClient } from '~/lib/generated/prisma/client'
-import { verifyToken } from '~/server/utils/jwt'
+import { verifyToken } from '#server/utils/jwt'
 
 const prisma = new PrismaClient()
 

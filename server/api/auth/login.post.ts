@@ -1,10 +1,7 @@
-import { PrismaClient } from '~/lib/generated/prisma/client'
+import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import type { NuxtRequestHandler } from 'h3'
-
-const prisma = new PrismaClient()
-
 export default defineEventHandler<NuxtRequestHandler>(async (event) => {
   const { email, password } = await readBody(event)
 
