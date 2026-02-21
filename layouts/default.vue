@@ -162,6 +162,6 @@ const userInitials = computed(() => {
 
 function formatRole(role?: string) {
   if (!role) return ''
-  return role.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+  return role.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
 }
 </script>

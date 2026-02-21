@@ -326,17 +326,19 @@ const totalOtherExpenses = computed(() => expenses.value.reduce((sum, exp) => su
 const totalOperationalCost = computed(() => totalFuelCost.value + totalOtherExpenses.value)
 
 onMounted(async () => {
-  await Promise.all([loadFuelLogs(), loadExpenses(), loadVehicles()])
+  loading.value = true
+  try {
+    await Promise.all([loadFuelLogs(), loadExpenses(), loadVehicles()])
+  } finally {
+    loading.value = false
+  }
 })
 
 async function loadFuelLogs() {
-  loading.value = true
   try {
     fuelLogs.value = await $fetch('/api/fuel-logs')
   } catch (e) {
     console.error(e)
-  } finally {
-    loading.value = false
   }
 }
 

@@ -351,7 +351,7 @@ function getStatusPercentage(count: number): number {
 }
 
 function formatStatus(status: string): string {
-  return status.replace('_', ' ')
+  return status.replaceAll('_', ' ')
 }
 
 async function exportCSV() {
