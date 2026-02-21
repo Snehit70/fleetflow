@@ -1,7 +1,5 @@
-import { PrismaClient } from '~/lib/generated/prisma/client'
+import { prisma } from '#server/utils/prisma'
 import { verifyToken } from '#server/utils/jwt'
-
-const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'auth') || getHeader(event, 'authorization')?.replace('Bearer ', '')
