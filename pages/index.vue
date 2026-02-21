@@ -61,7 +61,8 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'default',
-  middleware: ['auth', 'role']
+  middleware: ['auth', 'role'],
+  roles: ['MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST']
 })
 
 const dashboard = ref({

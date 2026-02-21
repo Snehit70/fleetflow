@@ -83,7 +83,7 @@
     </div>
 
     <!-- Export Section -->
-    <div class="bg-white rounded-lg shadow p-6">
+    <div v-if="canExport" class="bg-white rounded-lg shadow p-6">
       <h3 class="text-lg font-semibold mb-4">Export Data</h3>
       <UButton color="primary" @click="exportCSV">Download CSV Report</UButton>
     </div>
@@ -97,10 +97,14 @@ definePageMeta({
   roles: ['MANAGER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST']
 })
 
+const { user } = useAuth()
+
 const fuelEfficiency = ref<any[]>([])
 const costs = ref<{ fuel: number; maintenance: number; other: number; total: number }>({ fuel: 0, maintenance: 0, other: 0, total: 0 })
 const utilization = ref<any>(null)
 const loading = ref(true)
+
+const canExport = computed(() => ['MANAGER', 'FINANCIAL_ANALYST'].includes(user.value?.role || ''))
 
 onMounted(async () => {
   await loadAnalytics()
@@ -148,8 +152,16 @@ function formatStatus(status: string): string {
 
 async function exportCSV() {
   try {
-    // In a real implementation, this would download a CSV file
-    alert('CSV export feature would generate and download a report. Implement this endpoint at /api/analytics/export')
+    const response = await $fetch('/api/analytics/export', {
+      responseType: 'blob'
+    })
+    const blob = new Blob([response as any], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'fleet-analytics-export.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   } catch (e) {
     console.error(e)
     alert('Error exporting CSV')
