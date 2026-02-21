@@ -24,11 +24,14 @@ logs
 !.env.example
 
 # Prisma
-/app/generated/prisma
+lib/generated/prisma
+app/generated/prisma
 prisma/dev.db
 prisma/dev.db-journal
 prisma/dev.db-wal
 prisma/dev.db-shm
+dev.db
+dev.db-journal
 
 # Local agent config
 AGENTS.md

@@ -2,7 +2,7 @@
 
 > Hackathon: **Odoo x Gujarat Vidyapith Hackathon '26**
 
-A centralized, rule-based digital hub that replaces inefficient manual logbooks to optimize delivery fleet lifecycle, monitor driver safety, and track financial performance.
+A centralized, rule-based digital hub that optimizes delivery fleet lifecycle, monitors driver safety, and tracks financial performance.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ A centralized, rule-based digital hub that replaces inefficient manual logbooks 
 - **Maintenance Logs** - Auto vehicle status updates
 - **Expense Tracking** - Fuel logs and operational costs
 - **Analytics** - Fuel efficiency, ROI, CSV exports
-- **RBAC** - Role-based access control (Manager, Dispatcher, Safety Officer, Financial Analyst)
+- **RBAC** - Role-based access control
 
 ## Quick Start
 
@@ -32,14 +32,14 @@ A centralized, rule-based digital hub that replaces inefficient manual logbooks 
 bun install
 
 # Setup database
+bunx prisma generate
 bunx prisma db push
-bunx prisma db seed
 
 # Run development server
 bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open http://localhost:3000
 
 ## Demo Credentials
 
@@ -52,19 +52,12 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Documentation
 
-- [Problem Statement](./docs/01-PROBLEM-STATEMENT.md)
-- [Tech Stack](./docs/02-TECH-STACK.md)
-- [Database Schema](./docs/03-DATABASE-SCHEMA.md)
-- [Pages Specification](./docs/04-PAGES.md)
-- [API Routes](./docs/05-API-ROUTES.md)
-- [Folder Structure](./docs/06-FOLDER-STRUCTURE.md)
-- [Development Timeline](./docs/07-TIMELINE.md)
-- [Seed Data](./docs/08-SEED-DATA.md)
+See `docs/` folder for detailed documentation.
 
 ## Team
 
-- **Team Leader**: Atulya Rai
-- **Mentor**: Bharat Singh Rathore ([@bsra-odoo](https://github.com/bsra-odoo))
+- **Team Leader:** Atulya Rai
+- **Mentor:** Bharat Singh Rathore ([@bsra-odoo](https://github.com/bsra-odoo))
 
 ## License
 
