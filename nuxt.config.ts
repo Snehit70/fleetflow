@@ -9,6 +9,14 @@ export default defineNuxtConfig({
     app: 'app',
   },
 
+  // Component auto-import without path prefix
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false,
+    },
+  ],
+
   devServer: {
     port: 4000,
   },
