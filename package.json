@@ -7,10 +7,16 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "seed": "bunx prisma db seed"
+  },
+  "prisma": {
+    "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@prisma/adapter-libsql": "^7.4.1",
     "@prisma/client": "^7.4.1",
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",

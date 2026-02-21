@@ -12,11 +12,11 @@
 - [x] Initialize Git repository
 - [x] Create documentation (docs/)
 - [x] Merge documentation PR
-- [~] Initialize Nuxt 3 project
-- [ ] Setup Prisma with schema
-- [ ] Generate Prisma client
-- [ ] Push schema to SQLite
-- [ ] Create seed data script
+- [x] Initialize Nuxt 3 project
+- [x] Setup Prisma with schema
+- [x] Generate Prisma client
+- [x] Push schema to SQLite
+- [x] Create seed data script
 
 ---
 
