@@ -21,17 +21,6 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  // Get trips grouped by vehicle for distance calculation
-  const trips = await prisma.trip.groupBy({
-    by: ['vehicleId'],
-    _sum: {
-      cargoWeight: true
-    },
-    where: {
-      status: 'COMPLETED'
-    }
-  })
-
   // Get vehicle details
   const vehicles = await prisma.vehicle.findMany({
     select: {
@@ -45,7 +34,9 @@ export default defineEventHandler(async (event) => {
   // Build fuel efficiency data
   const efficiencyData = fuelLogs.map(log => {
     const vehicle = vehicles.find(v => v.id === log.vehicleId)
-    const distance = log._max.odometer - log._min.odometer
+    const minOdo = log._min.odometer ?? 0
+    const maxOdo = log._max.odometer ?? 0
+    const distance = maxOdo - minOdo
     const liters = log._sum.liters || 0
     const efficiency = distance > 0 && liters > 0 ? distance / liters : 0
 
@@ -54,7 +45,7 @@ export default defineEventHandler(async (event) => {
       vehicleName: vehicle?.name || 'Unknown',
       vehicleType: vehicle?.type || 'Unknown',
       liters: liters,
-      distance: distance || 0,
+      distance: distance,
       efficiency: Math.round(efficiency * 100) / 100
     }
   }).filter(e => e.distance > 0)

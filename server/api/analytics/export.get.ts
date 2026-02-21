@@ -8,7 +8,10 @@ export default defineEventHandler(async (event) => {
     by: ['vehicleId'],
     _sum: { liters: true, cost: true },
     _min: { odometer: true },
-    _max: { odometer: true }
+    _max: { odometer: true },
+    where: {
+      liters: { gt: 0 }
+    }
   })
 
   const vehicles = await prisma.vehicle.findMany({
@@ -17,7 +20,9 @@ export default defineEventHandler(async (event) => {
 
   const efficiencyData = fuelLogs.map(log => {
     const vehicle = vehicles.find(v => v.id === log.vehicleId)
-    const distance = log._max.odometer - log._min.odometer
+    const minOdo = log._min.odometer ?? 0
+    const maxOdo = log._max.odometer ?? 0
+    const distance = maxOdo - minOdo
     const liters = log._sum.liters || 0
     const cost = log._sum.cost || 0
     return {

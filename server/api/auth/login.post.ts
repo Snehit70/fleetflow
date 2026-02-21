@@ -1,6 +1,6 @@
 import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import { signToken } from '#server/utils/jwt'
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readBody(event)
@@ -24,16 +24,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Invalid credentials' })
   }
 
-  const jwtSecret = process.env.JWT_SECRET
-  if (!jwtSecret) {
-    throw createError({ statusCode: 500, message: 'JWT_SECRET not configured' })
-  }
-
-  const token = jwt.sign(
-    { userId: user.id, role: user.role },
-    jwtSecret,
-    { expiresIn: '7d' }
-  )
+  const token = signToken({ userId: user.id, role: user.role })
 
   const { password: _, ...userWithoutPassword } = user
 

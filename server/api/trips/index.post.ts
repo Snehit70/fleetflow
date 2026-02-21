@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const { vehicleId, driverId, origin, destination, cargoWeight, cargoDescription } = body
 
-  if (!vehicleId || !driverId || !origin || !destination || !cargoWeight) {
+  if (!vehicleId || !driverId || !origin || !destination || cargoWeight == null) {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
