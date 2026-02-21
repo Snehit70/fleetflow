@@ -10,6 +10,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing required fields' })
   }
 
+  const parsedCargoWeight = parseInt(cargoWeight)
+  if (isNaN(parsedCargoWeight)) {
+    throw createError({ statusCode: 400, message: 'cargoWeight must be a valid number' })
+  }
+
   // Fetch vehicle and driver
   const [vehicle, driver] = await Promise.all([
     prisma.vehicle.findUnique({ where: { id: vehicleId } }),
@@ -20,8 +25,8 @@ export default defineEventHandler(async (event) => {
   if (!driver) throw createError({ statusCode: 404, message: 'Driver not found' })
 
   // Validation rules
-  if (cargoWeight > vehicle.maxCapacity) {
-    throw createError({ statusCode: 400, message: `Cargo weight (${cargoWeight}kg) exceeds vehicle max capacity (${vehicle.maxCapacity}kg)` })
+  if (parsedCargoWeight > vehicle.maxCapacity) {
+    throw createError({ statusCode: 400, message: `Cargo weight (${parsedCargoWeight}kg) exceeds vehicle max capacity (${vehicle.maxCapacity}kg)` })
   }
 
   if (driver.status !== 'ON_DUTY') {
@@ -57,7 +62,7 @@ export default defineEventHandler(async (event) => {
       driverId,
       origin,
       destination,
-      cargoWeight,
+      cargoWeight: parsedCargoWeight,
       cargoDescription,
       status: 'DRAFT',
       startOdometer: vehicle.odometer

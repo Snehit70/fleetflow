@@ -40,10 +40,16 @@ export default defineEventHandler(async (event) => {
   const headers = ['Vehicle Name', 'License Plate', 'Type', 'Distance (km)', 'Liters Used', 'Fuel Cost ($)', 'Efficiency (km/L)']
   const escapeCsvField = (value: string | number): string => {
     const str = String(value)
-    if (/^[=+\-@\t\r]/.test(str)) {
-      return "'" + str.replace(/"/g, '""')
+    const needsQuotes = str.includes(',') || str.includes('"') || str.includes('\n')
+    const hasInjectionRisk = /^[=+\-@\t\r]/.test(str)
+    const escaped = str.replace(/"/g, '""')
+    if (hasInjectionRisk) {
+      return `"'" + escaped + '"'`
     }
-    return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str
+    if (needsQuotes) {
+      return `"${escaped}"`
+    }
+    return str
   }
 
   const rows = efficiencyData.map(row => [

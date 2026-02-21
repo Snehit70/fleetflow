@@ -11,6 +11,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Missing required fields: vehicleId, description, cost' })
   }
 
+  const parsedCost = parseFloat(cost)
+  if (isNaN(parsedCost)) {
+    throw createError({ statusCode: 400, message: 'Cost must be a valid number' })
+  }
+
+  const parsedDate = date ? new Date(date) : new Date()
+  if (date && isNaN(parsedDate.getTime())) {
+    throw createError({ statusCode: 400, message: 'Invalid date format' })
+  }
+
   // Check if vehicle exists
   const vehicle = await prisma.vehicle.findUnique({
     where: { id: vehicleId }
@@ -28,8 +38,8 @@ export default defineEventHandler(async (event) => {
       data: {
         vehicleId,
         description,
-        cost: parseFloat(cost),
-        date: date ? new Date(date) : new Date(),
+        cost: parsedCost,
+        date: parsedDate,
         notes: notes || null
       }
     })
