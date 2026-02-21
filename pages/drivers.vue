@@ -310,6 +310,10 @@ const form = ref({
 
 const canEdit = computed(() => ['MANAGER', 'SAFETY_OFFICER'].includes(user.value?.role || ''))
 
+onMounted(() => {
+  loadDrivers()
+})
+
 const filteredDrivers = computed(() => {
   return drivers.value.filter(d => {
     const matchesSearch = !searchQuery.value || 
@@ -336,9 +340,13 @@ function parseDateOnly(dateString: string): Date | null {
   // Parse YYYY-MM-DD as local date (no timezone shift)
   const parts = dateString.split('-')
   if (parts.length !== 3) return null
-  const year = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10) - 1 // 0-indexed
-  const day = parseInt(parts[2], 10)
+  const yearStr = parts[0]
+  const monthStr = parts[1]
+  const dayStr = parts[2]
+  if (!yearStr || !monthStr || !dayStr) return null
+  const year = parseInt(yearStr, 10)
+  const month = parseInt(monthStr, 10) - 1 // 0-indexed
+  const day = parseInt(dayStr, 10)
   const date = new Date(year, month, day)
   return isNaN(date.getTime()) ? null : date
 }
@@ -347,6 +355,15 @@ function isExpired(dateString: string): boolean {
   const expiry = parseDateOnly(dateString)
   if (!expiry) return false
   return expiry < new Date()
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 function getSafetyScoreColor(score: number): string {
@@ -373,8 +390,14 @@ function openAddModal() {
 function editDriver(driver: Driver) {
   editingDriver.value = driver
   form.value = { 
-    ...driver,
-    licenseExpiry: driver.licenseExpiry.split('T')[0]
+    name: driver.name,
+    email: driver.email,
+    phone: driver.phone || '',
+    licenseNumber: driver.licenseNumber,
+    licenseExpiry: driver.licenseExpiry.split('T')[0],
+    licenseCategory: driver.licenseCategory,
+    status: driver.status,
+    safetyScore: driver.safetyScore
   }
   showModal.value = true
 }
@@ -414,6 +437,19 @@ async function handleSubmit() {
 function confirmDelete(driver: Driver) {
   deletingDriver.value = driver
   showDeleteDialog.value = true
+}
+
+async function loadDrivers() {
+  loading.value = true
+  try {
+    const data = await $fetch<Driver[]>('/api/drivers')
+    drivers.value = data
+  } catch (e) {
+    console.error('Failed to load drivers:', e)
+    error('Failed to load drivers', 'Please refresh the page.')
+  } finally {
+    loading.value = false
+  }
 }
 
 async function handleDelete() {
