@@ -1,124 +1,326 @@
 <template>
-  <div class="p-6">
-    <PageHeader title="Trips" subtitle="Manage trip assignments and tracking">
-      <template #actions>
-        <UButton v-if="canManageTrips" color="primary" @click="showAddModal = true">New Trip</UButton>
-      </template>
-    </PageHeader>
+  <div>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Trips</h1>
+        <p class="page-subtitle">Manage trip assignments and track deliveries</p>
+      </div>
+      <button v-if="canManageTrips" @click="showAddModal = true" class="btn-primary btn-md">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        New Trip
+      </button>
+    </div>
 
-    <div v-if="loading" class="py-10">Loading...</div>
-    <div v-else class="bg-white rounded-lg shadow overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-gray-50">
+    <!-- Status Filter Tabs -->
+    <div class="flex gap-2 mb-6 border-b border-border">
+      <button
+        v-for="tab in statusTabs"
+        :key="tab.value"
+        @click="activeTab = tab.value"
+        :class="[
+          'px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px',
+          activeTab === tab.value 
+            ? 'border-primary text-primary' 
+            : 'border-transparent text-muted-foreground hover:text-foreground'
+        ]"
+      >
+        {{ tab.label }}
+        <span 
+          v-if="tab.count > 0" 
+          :class="[
+            'ml-2 px-2 py-0.5 rounded-full text-xs',
+            activeTab === tab.value ? 'bg-primary/10' : 'bg-muted'
+          ]"
+        >
+          {{ tab.count }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <TableSkeleton v-if="loading" :rows="5" :columns="7" />
+
+    <!-- Empty State -->
+    <div v-else-if="filteredTrips.length === 0" class="card">
+      <EmptyState
+        :title="activeTab !== 'all' ? `No ${activeTab.toLowerCase()} trips` : 'No trips yet'"
+        :description="activeTab !== 'all' ? 'Trips with this status will appear here.' : 'Create your first trip to start managing deliveries.'"
+      >
+        <template #action v-if="canManageTrips && activeTab === 'all'">
+          <button @click="showAddModal = true" class="btn-primary btn-md">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Trip
+          </button>
+        </template>
+      </EmptyState>
+    </div>
+
+    <!-- Data Table -->
+    <div v-else class="table-container">
+      <table class="table">
+        <thead class="table-header">
           <tr>
-            <th class="px-6 py-3 text-left">ID</th>
-            <th class="px-6 py-3 text-left">Origin</th>
-            <th class="px-6 py-3 text-left">Destination</th>
-            <th class="px-6 py-3 text-left">Vehicle</th>
-            <th class="px-6 py-3 text-left">Driver</th>
-            <th class="px-6 py-3 text-left">Cargo (kg)</th>
-            <th class="px-6 py-3 text-left">Status</th>
-            <th class="px-6 py-3 text-left">Actions</th>
+            <th class="table-header-cell">Trip ID</th>
+            <th class="table-header-cell">Route</th>
+            <th class="table-header-cell">Vehicle</th>
+            <th class="table-header-cell">Driver</th>
+            <th class="table-header-cell">Cargo</th>
+            <th class="table-header-cell">Status</th>
+            <th class="table-header-cell">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="trip in trips" :key="trip.id" class="border-t">
-            <td class="px-6 py-4 text-sm text-gray-500">{{ trip.id.slice(0, 8) }}</td>
-            <td class="px-6 py-4">{{ trip.origin }}</td>
-            <td class="px-6 py-4">{{ trip.destination }}</td>
-            <td class="px-6 py-4">{{ trip.vehicle?.name }} ({{ trip.vehicle?.licensePlate }})</td>
-            <td class="px-6 py-4">{{ trip.driver?.name }}</td>
-            <td class="px-6 py-4">{{ trip.cargoWeight }}</td>
-            <td class="px-6 py-4">
-              <UBadge :color="getStatusColor(trip.status)">
-                {{ trip.status }}
-              </UBadge>
+        <tbody class="table-body">
+          <tr v-for="trip in filteredTrips" :key="trip.id" class="table-row">
+            <td class="table-cell">
+              <code class="font-mono text-sm bg-muted px-2 py-1 rounded">{{ trip.id.slice(0, 8) }}</code>
             </td>
-            <td class="px-6 py-4">
-              <template v-if="canManageTrips">
-                <UButton v-if="trip.status === 'DRAFT'" size="xs" variant="ghost" color="green" @click="dispatchTrip(trip.id)">Dispatch</UButton>
-                <UButton v-if="trip.status === 'DISPATCHED'" size="xs" variant="ghost" color="blue" @click="showCompleteModal(trip)">Complete</UButton>
-                <UButton v-if="['DRAFT', 'DISPATCHED'].includes(trip.status)" size="xs" variant="ghost" color="red" @click="cancelTrip(trip.id)">Cancel</UButton>
-              </template>
-              <span v-else class="text-gray-400 text-sm">Read only</span>
+            <td class="table-cell">
+              <div class="flex items-center gap-2">
+                <span class="font-medium">{{ trip.origin }}</span>
+                <svg class="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+                <span class="font-medium">{{ trip.destination }}</span>
+              </div>
+            </td>
+            <td class="table-cell">
+              <div v-if="trip.vehicle">
+                <div class="font-medium">{{ trip.vehicle.name }}</div>
+                <div class="text-xs text-muted-foreground">{{ trip.vehicle.licensePlate }}</div>
+              </div>
+            </td>
+            <td class="table-cell">
+              <div v-if="trip.driver" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span class="text-xs font-semibold text-primary">{{ getInitials(trip.driver.name) }}</span>
+                </div>
+                <span>{{ trip.driver.name }}</span>
+              </div>
+            </td>
+            <td class="table-cell">
+              <div class="capacity-bar">
+                <div class="capacity-bar-track w-20">
+                  <div 
+                    class="capacity-bar-fill"
+                    :class="getCapacityColor(trip.cargoWeight, trip.vehicle?.maxCapacity || 1000)"
+                    :style="{ width: getCapacityPercentage(trip.cargoWeight, trip.vehicle?.maxCapacity || 1000) + '%' }"
+                  />
+                </div>
+                <span class="capacity-bar-label">{{ trip.cargoWeight }}kg</span>
+              </div>
+            </td>
+            <td class="table-cell">
+              <StatusBadge :status="trip.status" />
+            </td>
+            <td class="table-cell">
+              <div class="flex items-center gap-1">
+                <template v-if="canManageTrips">
+                  <button 
+                    v-if="trip.status === 'DRAFT'" 
+                    @click="dispatchTrip(trip.id)"
+                    class="btn-ghost btn-sm px-2 py-1 text-success hover:bg-success/10"
+                    title="Dispatch"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="22" y1="2" x2="11" y2="13" />
+                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                    Dispatch
+                  </button>
+                  <button 
+                    v-if="trip.status === 'DISPATCHED'" 
+                    @click="openCompleteModal(trip)"
+                    class="btn-ghost btn-sm px-2 py-1 text-info hover:bg-info/10"
+                    title="Complete"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                      <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    Complete
+                  </button>
+                  <button 
+                    v-if="['DRAFT', 'DISPATCHED'].includes(trip.status)" 
+                    @click="cancelTrip(trip.id)"
+                    class="btn-ghost btn-sm px-2 py-1 text-danger hover:bg-danger/10"
+                    title="Cancel"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                  </button>
+                </template>
+                <span v-else class="text-xs text-muted-foreground">Read only</span>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Create Trip Modal -->
+    <!-- Create Trip Slideover -->
     <USlideover v-model="showAddModal" title="Create Trip">
       <form @submit.prevent="handleSubmit">
-        <div class="space-y-4 p-6">
+        <div class="space-y-5 p-6">
+          <!-- Vehicle Selection -->
           <div>
-            <label class="block text-sm font-medium mb-1">Vehicle (Available only)</label>
-            <select v-model="form.vehicleId" required class="w-full px-3 py-2 border rounded">
-              <option value="">Select vehicle</option>
+            <label class="block text-sm font-medium mb-2">Vehicle</label>
+            <select v-model="form.vehicleId" required class="select">
+              <option value="">Select an available vehicle</option>
               <option v-for="v in availableVehicles" :key="v.id" :value="v.id">
-                {{ v.name }} ({{ v.licensePlate }}) - {{ v.maxCapacity }}kg
+                {{ v.name }} ({{ v.licensePlate }}) - {{ v.maxCapacity }}kg capacity
               </option>
             </select>
-            <div v-if="!availableVehicles.length" class="text-red-500 text-sm mt-1">No available vehicles</div>
+            <p v-if="!availableVehicles.length" class="text-xs text-danger mt-1">
+              No vehicles available. Check if any are in shop or on trip.
+            </p>
           </div>
+
+          <!-- Driver Selection -->
           <div>
-            <label class="block text-sm font-medium mb-1">Driver (ON DUTY only)</label>
-            <select v-model="form.driverId" required class="w-full px-3 py-2 border rounded">
-              <option value="">Select driver</option>
+            <label class="block text-sm font-medium mb-2">Driver</label>
+            <select v-model="form.driverId" required class="select">
+              <option value="">Select an eligible driver</option>
               <option v-for="d in eligibleDrivers" :key="d.id" :value="d.id">
-                {{ d.name }} - {{ d.licenseCategory }} ({{ d.licenseExpiry ? formatDate(d.licenseExpiry) : 'No expiry' }})
+                {{ d.name }} - {{ d.licenseCategory }} license
               </option>
             </select>
-            <div v-if="!eligibleDrivers.length" class="text-red-500 text-sm mt-1">No eligible drivers</div>
+            <p v-if="!eligibleDrivers.length" class="text-xs text-danger mt-1">
+              No eligible drivers. Drivers must be ON_DUTY with valid license.
+            </p>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Origin</label>
-            <input v-model="form.origin" type="text" required class="w-full px-3 py-2 border rounded" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Destination</label>
-            <input v-model="form.destination" type="text" required class="w-full px-3 py-2 border rounded" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Cargo Weight (kg)</label>
-            <input v-model.number="form.cargoWeight" type="number" required class="w-full px-3 py-2 border rounded" />
-            <div v-if="selectedVehicle" class="text-sm text-gray-500 mt-1">
-              Max capacity: {{ selectedVehicle.maxCapacity }}kg
+
+          <!-- Route -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Origin</label>
+              <input v-model="form.origin" type="text" required class="input" placeholder="e.g., Warehouse A" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Destination</label>
+              <input v-model="form.destination" type="text" required class="input" placeholder="e.g., Store B" />
             </div>
           </div>
+
+          <!-- Cargo -->
           <div>
-            <label class="block text-sm font-medium mb-1">Cargo Description</label>
-            <textarea v-model="form.cargoDescription" class="w-full px-3 py-2 border rounded" rows="2"></textarea>
+            <label class="block text-sm font-medium mb-2">Cargo Weight (kg)</label>
+            <input v-model.number="form.cargoWeight" type="number" required class="input" min="1" />
+            
+            <!-- Capacity Validation -->
+            <div v-if="selectedVehicle" class="mt-3">
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="text-muted-foreground">Capacity Check</span>
+                <span :class="capacityValid ? 'text-success' : 'text-danger'">
+                  {{ form.cargoWeight }}kg / {{ selectedVehicle.maxCapacity }}kg
+                </span>
+              </div>
+              <div class="capacity-bar-track h-3">
+                <div 
+                  class="capacity-bar-fill h-full transition-all duration-300"
+                  :class="capacityValid ? 'bg-success' : 'bg-danger'"
+                  :style="{ width: Math.min(capacityPercentage, 100) + '%' }"
+                />
+              </div>
+              <p v-if="!capacityValid" class="text-xs text-danger mt-2 flex items-center gap-1">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Cargo weight exceeds vehicle capacity!
+              </p>
+            </div>
           </div>
-          <div v-if="validationError" class="text-red-500 text-sm p-3 bg-red-50 rounded">
-            {{ validationError }}
+
+          <!-- Cargo Description -->
+          <div>
+            <label class="block text-sm font-medium mb-2">Cargo Description (Optional)</label>
+            <textarea v-model="form.cargoDescription" class="input min-h-[80px]" placeholder="Describe the cargo..." />
+          </div>
+
+          <!-- Validation Error -->
+          <div v-if="validationError" class="alert alert-danger">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              {{ validationError }}
+            </div>
           </div>
         </div>
-        <div class="p-6 border-t flex gap-2 justify-end">
-          <UButton type="button" variant="soft" @click="showAddModal = false">Cancel</UButton>
-          <UButton type="submit" color="primary" :loading="saving">Create Trip</UButton>
+        
+        <div class="p-6 border-t border-border flex gap-3 justify-end">
+          <button type="button" @click="showAddModal = false" class="btn-secondary btn-md">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn-primary btn-md" 
+            :disabled="saving || !capacityValid || !form.vehicleId || !form.driverId"
+          >
+            <svg v-if="saving" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" />
+            </svg>
+            Create Trip
+          </button>
         </div>
       </form>
     </USlideover>
 
-    <!-- Complete Trip Modal -->
-    <USlideover v-model="showCompleteModalVisible" title="Complete Trip">
+    <!-- Complete Trip Slideover -->
+    <USlideover v-model="showCompleteModal" title="Complete Trip">
       <form @submit.prevent="handleComplete">
-        <div class="space-y-4 p-6">
-          <p class="text-gray-600">
-            Trip: <strong>{{ completingTrip?.origin }} → {{ completingTrip?.destination }}</strong>
-          </p>
-          <p class="text-gray-600">
-            Start odometer: <strong>{{ completingTrip?.startOdometer }} km</strong>
-          </p>
+        <div class="space-y-5 p-6">
+          <div class="card p-4 bg-muted/50">
+            <h4 class="font-medium mb-2">Trip Details</h4>
+            <p class="text-sm text-muted-foreground">
+              {{ completingTrip?.origin }} → {{ completingTrip?.destination }}
+            </p>
+            <p class="text-sm text-muted-foreground mt-1">
+              Start Odometer: <strong>{{ completingTrip?.startOdometer?.toLocaleString() }} km</strong>
+            </p>
+          </div>
+
           <div>
-            <label class="block text-sm font-medium mb-1">End Odometer (km)</label>
-            <input v-model.number="completeForm.endOdometer" type="number" required class="w-full px-3 py-2 border rounded" />
+            <label class="block text-sm font-medium mb-2">End Odometer (km)</label>
+            <input 
+              v-model.number="completeForm.endOdometer" 
+              type="number" 
+              required 
+              class="input"
+              :min="completingTrip?.startOdometer || 0"
+            />
+            <p v-if="completingTrip?.startOdometer && completeForm.endOdometer > completingTrip.startOdometer" class="text-xs text-muted-foreground mt-1">
+              Distance traveled: {{ (completeForm.endOdometer - completingTrip.startOdometer).toLocaleString() }} km
+            </p>
           </div>
         </div>
-        <div class="p-6 border-t flex gap-2 justify-end">
-          <UButton type="button" variant="soft" @click="showCompleteModalVisible = false">Cancel</UButton>
-          <UButton type="submit" color="primary" :loading="completing">Complete Trip</UButton>
+        
+        <div class="p-6 border-t border-border flex gap-3 justify-end">
+          <button type="button" @click="showCompleteModal = false" class="btn-secondary btn-md">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary btn-md" :disabled="completing">
+            <svg v-if="completing" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" />
+            </svg>
+            Complete Trip
+          </button>
         </div>
       </form>
     </USlideover>
@@ -132,28 +334,52 @@ definePageMeta({
   roles: ['MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']
 })
 
+const { user } = useAuth()
+const { success, error } = useToast()
+
 interface Trip {
   id: string
   origin: string
   destination: string
   cargoWeight: number
   cargoDescription?: string
-  status: string
+  status: 'DRAFT' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED'
   startOdometer?: number
   endOdometer?: number
-  vehicle?: { id: string; name: string; licensePlate: string; maxCapacity: number; status: string }
-  driver?: { id: string; name: string; licenseCategory: string; licenseExpiry: string; status: string }
+  vehicle?: { id: string; name: string; licensePlate: string; maxCapacity: number }
+  driver?: { id: string; name: string; licenseCategory: string }
 }
 
-const { user } = useAuth()
+interface Vehicle {
+  id: string
+  name: string
+  licensePlate: string
+  type: string
+  maxCapacity: number
+  status: string
+}
+
+interface Driver {
+  id: string
+  name: string
+  email: string
+  licenseCategory: string
+  licenseExpiry: string
+  status: string
+}
 
 const trips = ref<Trip[]>([])
-const vehicles = ref<any[]>([])
-const drivers = ref<any[]>([])
+const vehicles = ref<Vehicle[]>([])
+const drivers = ref<Driver[]>([])
 const loading = ref(true)
 const showAddModal = ref(false)
-const showCompleteModalVisible = ref(false)
+const showCompleteModal = ref(false)
 const completingTrip = ref<Trip | null>(null)
+const saving = ref(false)
+const completing = ref(false)
+const validationError = ref('')
+const activeTab = ref('all')
+
 const form = ref({
   vehicleId: '',
   driverId: '',
@@ -162,14 +388,48 @@ const form = ref({
   cargoWeight: 0,
   cargoDescription: ''
 })
+
 const completeForm = ref({
   endOdometer: 0
 })
-const saving = ref(false)
-const completing = ref(false)
-const validationError = ref('')
 
 const canManageTrips = computed(() => ['MANAGER', 'DISPATCHER'].includes(user.value?.role || ''))
+
+const statusTabs = computed(() => [
+  { value: 'all', label: 'All', count: trips.value.length },
+  { value: 'DRAFT', label: 'Draft', count: trips.value.filter(t => t.status === 'DRAFT').length },
+  { value: 'DISPATCHED', label: 'Dispatched', count: trips.value.filter(t => t.status === 'DISPATCHED').length },
+  { value: 'COMPLETED', label: 'Completed', count: trips.value.filter(t => t.status === 'COMPLETED').length },
+  { value: 'CANCELLED', label: 'Cancelled', count: trips.value.filter(t => t.status === 'CANCELLED').length },
+])
+
+const filteredTrips = computed(() => {
+  if (activeTab.value === 'all') return trips.value
+  return trips.value.filter(t => t.status === activeTab.value)
+})
+
+const availableVehicles = computed(() => vehicles.value.filter(v => v.status === 'AVAILABLE'))
+
+const eligibleDrivers = computed(() => {
+  const now = new Date()
+  return drivers.value.filter(d => {
+    if (d.status !== 'ON_DUTY') return false
+    if (new Date(d.licenseExpiry) < now) return false
+    return true
+  })
+})
+
+const selectedVehicle = computed(() => vehicles.value.find(v => v.id === form.value.vehicleId))
+
+const capacityPercentage = computed(() => {
+  if (!selectedVehicle.value) return 0
+  return (form.value.cargoWeight / selectedVehicle.value.maxCapacity) * 100
+})
+
+const capacityValid = computed(() => {
+  if (!selectedVehicle.value) return true
+  return form.value.cargoWeight <= selectedVehicle.value.maxCapacity
+})
 
 onMounted(async () => {
   await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
@@ -181,6 +441,7 @@ async function loadTrips() {
     trips.value = await $fetch('/api/trips')
   } catch (e) {
     console.error(e)
+    error('Failed to load trips')
   } finally {
     loading.value = false
   }
@@ -202,56 +463,34 @@ async function loadDrivers() {
   }
 }
 
-const availableVehicles = computed(() => {
-  return vehicles.value.filter(v => v.status === 'AVAILABLE')
-})
+function getInitials(name: string): string {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
 
-const eligibleDrivers = computed(() => {
-  const now = new Date()
-  return drivers.value.filter(d => {
-    if (d.status !== 'ON_DUTY') return false
-    const expiry = new Date(d.licenseExpiry)
-    if (expiry < now) return false
-    return true
-  })
-})
+function getCapacityPercentage(cargo: number, max: number): number {
+  return Math.min((cargo / max) * 100, 100)
+}
 
-const selectedVehicle = computed(() => {
-  return vehicles.value.find(v => v.id === form.value.vehicleId)
-})
+function getCapacityColor(cargo: number, max: number): string {
+  const percentage = (cargo / max) * 100
+  if (percentage > 100) return 'bg-danger'
+  if (percentage > 80) return 'bg-warning'
+  return 'bg-success'
+}
 
-function showCompleteModal(trip: Trip) {
+function openCompleteModal(trip: Trip) {
   completingTrip.value = trip
   completeForm.value = { endOdometer: trip.startOdometer || 0 }
-  showCompleteModalVisible.value = true
-}
-
-function getStatusColor(status: string) {
-  const colors: Record<string, string> = {
-    DRAFT: 'gray',
-    DISPATCHED: 'blue',
-    COMPLETED: 'green',
-    CANCELLED: 'red'
-  }
-  return colors[status] || 'gray'
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString()
+  showCompleteModal.value = true
 }
 
 async function handleSubmit() {
   saving.value = true
   validationError.value = ''
+  
   try {
-    // Client-side validation
-    const vehicle = selectedVehicle.value
-    if (!vehicle) {
-      validationError.value = 'Please select a vehicle'
-      return
-    }
-    if (form.value.cargoWeight > vehicle.maxCapacity) {
-      validationError.value = `Cargo weight (${form.value.cargoWeight}kg) exceeds vehicle max capacity (${vehicle.maxCapacity}kg)`
+    if (!capacityValid.value) {
+      validationError.value = 'Cargo weight exceeds vehicle capacity'
       return
     }
 
@@ -259,13 +498,14 @@ async function handleSubmit() {
       method: 'POST',
       body: form.value
     })
+    
+    success('Trip created', 'The trip has been created as a draft.')
     showAddModal.value = false
     resetForm()
     await Promise.all([loadTrips(), loadVehicles()])
   } catch (e: any) {
     console.error(e)
-    const errorData = e.data || e
-    validationError.value = errorData.message || 'Error creating trip'
+    validationError.value = e.data?.message || 'Error creating trip'
   } finally {
     saving.value = false
   }
@@ -274,10 +514,11 @@ async function handleSubmit() {
 async function dispatchTrip(id: string) {
   try {
     await $fetch(`/api/trips/${id}/dispatch`, { method: 'POST' })
+    success('Trip dispatched', 'The driver and vehicle are now on trip.')
     await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
-  } catch (e) {
+  } catch (e: any) {
     console.error(e)
-    alert('Error dispatching trip')
+    error('Error dispatching trip', e.data?.message)
   }
 }
 
@@ -288,24 +529,27 @@ async function handleComplete() {
       method: 'POST',
       body: completeForm.value
     })
-    showCompleteModalVisible.value = false
+    success('Trip completed', 'The vehicle and driver are now available.')
+    showCompleteModal.value = false
     await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
-  } catch (e) {
+  } catch (e: any) {
     console.error(e)
-    alert('Error completing trip')
+    error('Error completing trip', e.data?.message)
   } finally {
     completing.value = false
   }
 }
 
 async function cancelTrip(id: string) {
-  if (!confirm('Cancel this trip?')) return
+  if (!confirm('Are you sure you want to cancel this trip?')) return
+  
   try {
     await $fetch(`/api/trips/${id}/cancel`, { method: 'POST' })
+    success('Trip cancelled')
     await Promise.all([loadTrips(), loadVehicles(), loadDrivers()])
-  } catch (e) {
+  } catch (e: any) {
     console.error(e)
-    alert('Error cancelling trip')
+    error('Error cancelling trip', e.data?.message)
   }
 }
 
