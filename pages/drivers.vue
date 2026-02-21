@@ -164,7 +164,7 @@
     </div>
 
     <!-- Add/Edit Slideover -->
-    <USlideover v-model="showModal" :title="editingDriver ? 'Edit Driver' : 'Add Driver'">
+    <Slideover v-model="showModal" :title="editingDriver ? 'Edit Driver' : 'Add Driver'">
       <form @submit.prevent="handleSubmit">
         <div class="space-y-5 p-6">
           <div>
@@ -243,7 +243,7 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
   </div>
 </template>
 

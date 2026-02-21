@@ -154,7 +154,7 @@
     </div>
 
     <!-- Add/Edit Slideover -->
-    <USlideover v-model="showModal" :title="editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'">
+    <Slideover v-model="showModal" :title="editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'">
       <form @submit.prevent="handleSubmit">
         <div class="space-y-5 p-6">
           <div>
@@ -226,7 +226,19 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      :is-open="showDeleteDialog"
+      title="Delete Vehicle"
+      :message="`Are you sure you want to delete ${deletingVehicle?.name}? This action cannot be undone.`"
+      type="danger"
+      confirm-text="Delete"
+      :loading="deleting"
+      @confirm="handleDelete"
+      @cancel="showDeleteDialog = false"
+    />
   </div>
 </template>
 
@@ -256,6 +268,11 @@ const loading = ref(true)
 const showModal = ref(false)
 const editingVehicle = ref<Vehicle | null>(null)
 const saving = ref(false)
+
+// Delete dialog state
+const showDeleteDialog = ref(false)
+const deletingVehicle = ref<Vehicle | null>(null)
+const deleting = ref(false)
 
 // Filters
 const searchQuery = ref('')
@@ -366,21 +383,30 @@ async function handleSubmit() {
   }
 }
 
-async function confirmDelete(vehicle: Vehicle) {
+function confirmDelete(vehicle: Vehicle) {
   if (vehicle.status === 'ON_TRIP') {
     error('Cannot delete', 'This vehicle is currently on a trip.')
     return
   }
+  deletingVehicle.value = vehicle
+  showDeleteDialog.value = true
+}
+
+async function handleDelete() {
+  if (!deletingVehicle.value) return
   
-  if (!confirm(`Are you sure you want to delete ${vehicle.name}?`)) return
-  
+  deleting.value = true
   try {
-    await $fetch(`/api/vehicles/${vehicle.id}`, { method: 'DELETE' })
-    success('Vehicle deleted', `${vehicle.name} has been removed from your fleet.`)
+    await $fetch(`/api/vehicles/${deletingVehicle.value.id}`, { method: 'DELETE' })
+    success('Vehicle deleted', `${deletingVehicle.value.name} has been removed from your fleet.`)
+    showDeleteDialog.value = false
+    deletingVehicle.value = null
     await loadVehicles()
   } catch (e: any) {
     console.error(e)
     error('Error deleting vehicle', e.data?.message || 'Please try again.')
+  } finally {
+    deleting.value = false
   }
 }
 </script>

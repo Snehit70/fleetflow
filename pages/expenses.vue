@@ -181,7 +181,7 @@
     </div>
 
     <!-- Add Fuel Log Slideover -->
-    <USlideover v-model="showFuelModal" title="Add Fuel Log">
+    <Slideover v-model="showFuelModal" title="Add Fuel Log">
       <form @submit.prevent="handleFuelSubmit">
         <div class="space-y-5 p-6">
           <div>
@@ -228,10 +228,10 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
 
     <!-- Add Expense Slideover -->
-    <USlideover v-model="showExpenseModal" title="Add Expense">
+    <Slideover v-model="showExpenseModal" title="Add Expense">
       <form @submit.prevent="handleExpenseSubmit">
         <div class="space-y-5 p-6">
           <div>
@@ -282,7 +282,7 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
   </div>
 </template>
 

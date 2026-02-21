@@ -169,7 +169,7 @@
     </div>
 
     <!-- Create Trip Slideover -->
-    <USlideover v-model="showAddModal" title="Create Trip">
+    <Slideover v-model="showAddModal" title="Create Trip">
       <form @submit.prevent="handleSubmit">
         <div class="space-y-5 p-6">
           <!-- Vehicle Selection -->
@@ -279,10 +279,10 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
 
     <!-- Complete Trip Slideover -->
-    <USlideover v-model="showCompleteModal" title="Complete Trip">
+    <Slideover v-model="showCompleteModal" title="Complete Trip">
       <form @submit.prevent="handleComplete">
         <div class="space-y-5 p-6">
           <div class="card p-4 bg-muted/50">
@@ -323,7 +323,7 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
   </div>
 </template>
 

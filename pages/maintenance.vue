@@ -166,7 +166,7 @@
     </div>
 
     <!-- Add Maintenance Slideover -->
-    <USlideover v-model="showAddModal" title="Log Maintenance">
+    <Slideover v-model="showAddModal" title="Log Maintenance">
       <form @submit.prevent="handleSubmit">
         <div class="space-y-5 p-6">
           <div>
@@ -241,7 +241,7 @@
           </button>
         </div>
       </form>
-    </USlideover>
+    </Slideover>
   </div>
 </template>
 
