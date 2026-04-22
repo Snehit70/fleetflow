@@ -336,7 +336,7 @@ onMounted(async () => {
 
 async function loadFuelLogs() {
   try {
-    fuelLogs.value = await $fetch('/api/fuel-logs')
+    fuelLogs.value = await $fetch<any[]>('/api/fuel-logs')
   } catch (e) {
     console.error(e)
   }
@@ -344,7 +344,7 @@ async function loadFuelLogs() {
 
 async function loadExpenses() {
   try {
-    expenses.value = await $fetch('/api/expenses')
+    expenses.value = await $fetch<any[]>('/api/expenses')
   } catch (e) {
     console.error(e)
   }
@@ -352,7 +352,7 @@ async function loadExpenses() {
 
 async function loadVehicles() {
   try {
-    vehicles.value = await $fetch('/api/vehicles')
+    vehicles.value = await $fetch<any[]>('/api/vehicles')
   } catch (e) {
     console.error(e)
   }

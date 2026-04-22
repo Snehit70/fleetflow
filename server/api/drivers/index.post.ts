@@ -1,19 +1,11 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+import { driverCreateSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'SAFETY_OFFICER'])
-  const body = await readBody(event)
-
+  const body = await parseRequestBody(event, driverCreateSchema)
   const { name, email, licenseNumber, licenseExpiry, licenseCategory } = body
-
-  if (!name || !email || !licenseNumber || !licenseExpiry || !licenseCategory) {
-    throw createError({ statusCode: 400, message: 'Missing required fields: name, email, licenseNumber, licenseExpiry, licenseCategory' })
-  }
-
-  const parsedExpiry = new Date(licenseExpiry)
-  if (isNaN(parsedExpiry.getTime())) {
-    throw createError({ statusCode: 400, message: 'Invalid licenseExpiry date format' })
-  }
 
   const driver = await prisma.driver.create({
     data: {
@@ -21,10 +13,10 @@ export default defineEventHandler(async (event) => {
       email,
       phone: body.phone || null,
       licenseNumber,
-      licenseExpiry: parsedExpiry,
+      licenseExpiry,
       licenseCategory,
-      status: body.status || 'ON_DUTY',
-      safetyScore: body.safetyScore ?? 100
+      status: body.status,
+      safetyScore: body.safetyScore
     }
   })
 

@@ -2,13 +2,11 @@ import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
 import { signToken } from '#server/utils/jwt'
 import { setAuthCookie } from '#server/utils/auth-cookie'
+import { loginSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readBody(event)
-
-  if (!email || !password) {
-    throw createError({ statusCode: 400, message: 'Email and password required' })
-  }
+  const { email, password } = await parseRequestBody(event, loginSchema)
 
   const user = await prisma.user.findUnique({
     where: { email },

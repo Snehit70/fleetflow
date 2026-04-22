@@ -1,22 +1,15 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+import { vehicleUpdateSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER'])
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, message: 'Vehicle ID required' })
 
-  const body = await readBody(event)
-
-  // Whitelist allowed fields
-  const allowedFields = ['name', 'licensePlate', 'type', 'maxCapacity', 'odometer', 'region', 'status']
-  const data: Record<string, any> = {}
-
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) {
-      data[field] = body[field]
-    }
-  }
+  const body = await parseRequestBody(event, vehicleUpdateSchema)
+  const data = { ...body }
 
   // Validate odometer doesn't go backwards if being updated
   if (data.odometer !== undefined) {
@@ -50,7 +43,10 @@ export default defineEventHandler(async (event) => {
 
   const vehicle = await prisma.vehicle.update({
     where: { id },
-    data
+    data: {
+      ...data,
+      ...(data.region !== undefined ? { region: data.region || null } : {}),
+    }
   })
 
   return vehicle

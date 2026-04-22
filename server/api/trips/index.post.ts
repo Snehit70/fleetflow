@@ -1,19 +1,10 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+import { tripCreateSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'DISPATCHER'])
-  const body = await readBody(event)
-
-  const { vehicleId, driverId, origin, destination, cargoWeight, cargoDescription } = body
-
-  if (!vehicleId || !driverId || !origin || !destination || cargoWeight == null) {
-    throw createError({ statusCode: 400, message: 'Missing required fields' })
-  }
-
-  const parsedCargoWeight = parseInt(cargoWeight)
-  if (isNaN(parsedCargoWeight)) {
-    throw createError({ statusCode: 400, message: 'cargoWeight must be a valid number' })
-  }
+  const { vehicleId, driverId, origin, destination, cargoWeight, cargoDescription } = await parseRequestBody(event, tripCreateSchema)
 
   // Fetch vehicle and driver
   const [vehicle, driver] = await Promise.all([
@@ -25,8 +16,8 @@ export default defineEventHandler(async (event) => {
   if (!driver) throw createError({ statusCode: 404, message: 'Driver not found' })
 
   // Validation rules
-  if (parsedCargoWeight > vehicle.maxCapacity) {
-    throw createError({ statusCode: 400, message: `Cargo weight (${parsedCargoWeight}kg) exceeds vehicle max capacity (${vehicle.maxCapacity}kg)` })
+  if (cargoWeight > vehicle.maxCapacity) {
+    throw createError({ statusCode: 400, message: `Cargo weight (${cargoWeight}kg) exceeds vehicle max capacity (${vehicle.maxCapacity}kg)` })
   }
 
   if (driver.status !== 'ON_DUTY') {
@@ -62,7 +53,7 @@ export default defineEventHandler(async (event) => {
       driverId,
       origin,
       destination,
-      cargoWeight: parsedCargoWeight,
+      cargoWeight,
       cargoDescription,
       status: 'DRAFT',
       startOdometer: vehicle.odometer

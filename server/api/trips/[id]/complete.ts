@@ -1,5 +1,7 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+import { tripCompleteSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER', 'DISPATCHER'])
   const id = event.context.params?.id
@@ -17,12 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: `Cannot complete trip in ${trip.status} status` })
   }
 
-  const body = await readBody(event)
-  const { endOdometer } = body
-
-  if (endOdometer === undefined) {
-    throw createError({ statusCode: 400, message: 'endOdometer is required' })
-  }
+  const { endOdometer } = await parseRequestBody(event, tripCompleteSchema)
 
   if (trip.startOdometer === null) {
     throw createError({ statusCode: 400, message: 'Trip has no startOdometer recorded' })

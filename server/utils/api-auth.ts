@@ -1,6 +1,5 @@
 import { getCookie, getHeader } from 'h3'
 import { verifyToken } from './jwt'
-import { hasPermission } from './rbac'
 import { AUTH_COOKIE_NAME } from './auth-cookie'
 
 export function getCurrentUser(event: any) {
@@ -25,14 +24,6 @@ export function requireAuth(event: any) {
 export function requireRole(event: any, allowedRoles: string[]) {
   const user = requireAuth(event)
   if (!allowedRoles.includes(user.role)) {
-    throw createError({ statusCode: 403, message: 'Insufficient permissions' })
-  }
-  return user
-}
-
-export function requirePermission(event: any, resource: string, action: string) {
-  const user = requireAuth(event)
-  if (!hasPermission(user.role, resource, action)) {
     throw createError({ statusCode: 403, message: 'Insufficient permissions' })
   }
   return user

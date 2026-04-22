@@ -318,7 +318,7 @@ onMounted(async () => {
 async function loadMaintenance() {
   loading.value = true
   try {
-    maintenanceRecords.value = await $fetch('/api/maintenance')
+    maintenanceRecords.value = await $fetch<any[]>('/api/maintenance')
   } catch (e) {
     console.error(e)
     error('Failed to load maintenance records')
@@ -329,7 +329,7 @@ async function loadMaintenance() {
 
 async function loadVehicles() {
   try {
-    vehicles.value = await $fetch('/api/vehicles')
+    vehicles.value = await $fetch<any[]>('/api/vehicles')
   } catch (e) {
     console.error(e)
   }

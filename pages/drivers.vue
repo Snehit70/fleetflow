@@ -394,7 +394,7 @@ function editDriver(driver: Driver) {
     email: driver.email,
     phone: driver.phone || '',
     licenseNumber: driver.licenseNumber,
-    licenseExpiry: driver.licenseExpiry.split('T')[0],
+    licenseExpiry: driver.licenseExpiry.split('T')[0] ?? '',
     licenseCategory: driver.licenseCategory,
     status: driver.status,
     safetyScore: driver.safetyScore

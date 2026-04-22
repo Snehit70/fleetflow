@@ -1,25 +1,11 @@
 import { prisma } from '#server/utils/prisma'
 import { requireRole } from '#server/utils/api-auth'
+import { maintenanceCreateSchema } from '#server/utils/schemas'
+import { parseRequestBody } from '#server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER'])
-  const body = await readBody(event)
-
-  const { vehicleId, description, cost, date, notes } = body
-
-  if (!vehicleId || !description || cost == null) {
-    throw createError({ statusCode: 400, message: 'Missing required fields: vehicleId, description, cost' })
-  }
-
-  const parsedCost = parseFloat(cost)
-  if (isNaN(parsedCost)) {
-    throw createError({ statusCode: 400, message: 'Cost must be a valid number' })
-  }
-
-  const parsedDate = date ? new Date(date) : new Date()
-  if (date && isNaN(parsedDate.getTime())) {
-    throw createError({ statusCode: 400, message: 'Invalid date format' })
-  }
+  const { vehicleId, description, cost, date, notes } = await parseRequestBody(event, maintenanceCreateSchema)
 
   // Check if vehicle exists
   const vehicle = await prisma.vehicle.findUnique({
@@ -38,8 +24,8 @@ export default defineEventHandler(async (event) => {
       data: {
         vehicleId,
         description,
-        cost: parsedCost,
-        date: parsedDate,
+        cost,
+        date: date || new Date(),
         notes: notes || null
       }
     })

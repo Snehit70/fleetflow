@@ -444,9 +444,11 @@ const availableVehicles = computed(() => vehicles.value.filter(v => v.status ===
 function parseDateOnly(dateString: string): Date | null {
   const parts = dateString.split('-')
   if (parts.length !== 3) return null
-  const year = parseInt(parts[0], 10)
-  const month = parseInt(parts[1], 10) - 1
-  const day = parseInt(parts[2], 10)
+  const [yearPart, monthPart, dayPart] = parts
+  if (!yearPart || !monthPart || !dayPart) return null
+  const year = parseInt(yearPart, 10)
+  const month = parseInt(monthPart, 10) - 1
+  const day = parseInt(dayPart, 10)
   const date = new Date(year, month, day)
   return isNaN(date.getTime()) ? null : date
 }
@@ -481,7 +483,7 @@ onMounted(async () => {
 async function loadTrips() {
   loading.value = true
   try {
-    trips.value = await $fetch('/api/trips')
+    trips.value = await $fetch<Trip[]>('/api/trips')
   } catch (e) {
     console.error(e)
     error('Failed to load trips')
@@ -492,7 +494,7 @@ async function loadTrips() {
 
 async function loadVehicles() {
   try {
-    vehicles.value = await $fetch('/api/vehicles')
+    vehicles.value = await $fetch<Vehicle[]>('/api/vehicles')
   } catch (e) {
     console.error(e)
     error('Failed to load vehicles', 'Please refresh the page')
@@ -501,7 +503,7 @@ async function loadVehicles() {
 
 async function loadDrivers() {
   try {
-    drivers.value = await $fetch('/api/drivers')
+    drivers.value = await $fetch<Driver[]>('/api/drivers')
   } catch (e) {
     console.error(e)
     error('Failed to load drivers', 'Please refresh the page')

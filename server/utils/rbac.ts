@@ -38,9 +38,9 @@ export const ROLE_PERMISSIONS = {
 export function hasPermission(userRole: string, resource: string, action: string): boolean {
   const permissions = ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]
   if (!permissions) return false
-  const resourcePerms = permissions[resource as keyof typeof permissions]
+  const resourcePerms = permissions[resource as keyof typeof permissions] as readonly string[] | undefined
   if (!resourcePerms) return false
-  return resourcePerms.includes(action as any)
+  return resourcePerms.includes(action)
 }
 
 export function requirePermission(resource: string, action: string) {

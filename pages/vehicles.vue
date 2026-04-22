@@ -286,7 +286,7 @@ const form = ref({
   maxCapacity: 500,
   odometer: 0,
   region: '',
-  status: 'AVAILABLE' as 'AVAILABLE' | 'IN_SHOP' | 'RETIRED'
+  status: 'AVAILABLE' as 'AVAILABLE' | 'ON_TRIP' | 'IN_SHOP' | 'RETIRED'
 })
 
 const canEdit = computed(() => user.value?.role === 'MANAGER')
@@ -322,7 +322,7 @@ onMounted(async () => {
 async function loadVehicles() {
   loading.value = true
   try {
-    vehicles.value = await $fetch('/api/vehicles')
+    vehicles.value = await $fetch<Vehicle[]>('/api/vehicles')
   } catch (e) {
     console.error(e)
     error('Failed to load vehicles')
@@ -347,7 +347,15 @@ function openAddModal() {
 
 function editVehicle(vehicle: Vehicle) {
   editingVehicle.value = vehicle
-  form.value = { ...vehicle }
+  form.value = {
+    name: vehicle.name,
+    licensePlate: vehicle.licensePlate,
+    type: vehicle.type,
+    maxCapacity: vehicle.maxCapacity,
+    odometer: vehicle.odometer,
+    region: vehicle.region || '',
+    status: vehicle.status,
+  }
   showModal.value = true
 }
 
