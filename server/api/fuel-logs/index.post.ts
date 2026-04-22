@@ -18,14 +18,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: `Odometer (${odometer}) cannot be less than vehicle's current odometer (${vehicle.odometer})` })
   }
 
-  await prisma.fuelLog.create({
-    data: {
-      vehicleId,
-      liters,
-      cost,
-      odometer,
-      date: date || new Date()
-    }
+  await prisma.$transaction(async (tx) => {
+    await tx.fuelLog.create({
+      data: {
+        vehicleId,
+        liters,
+        cost,
+        odometer,
+        date: date || new Date(),
+      },
+    })
+
+    await tx.vehicle.update({
+      where: { id: vehicleId },
+      data: { odometer },
+    })
   })
 
   return { message: 'Fuel log created' }

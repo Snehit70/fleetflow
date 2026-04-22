@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     const hasInjectionRisk = /^[=+\-@\t\r]/.test(str)
     const escaped = str.replace(/"/g, '""')
     if (hasInjectionRisk) {
-      return `"'" + escaped + '"'`
+      return `"'${escaped}"`
     }
     if (needsQuotes) {
       return `"${escaped}"`
