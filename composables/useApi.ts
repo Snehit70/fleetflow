@@ -1,19 +1,10 @@
 /**
  * Authenticated $fetch wrapper
- * Automatically adds Authorization header from auth cookie
+ * Relies on same-origin HttpOnly auth cookie.
  */
 export const useApi = () => {
-  const tokenCookie = useCookie('auth')
-
   const api = $fetch.create({
-    onRequest({ options }) {
-      if (tokenCookie.value) {
-        options.headers = {
-          ...options.headers,
-          authorization: `Bearer ${tokenCookie.value}`
-        }
-      }
-    }
+    credentials: 'include'
   })
 
   return api
@@ -23,13 +14,8 @@ export const useApi = () => {
  * Global authenticated fetch - can be used directly
  */
 export const $api = <T>(url: string, options?: Parameters<typeof $fetch>[1]) => {
-  const tokenCookie = useCookie('auth')
-  
   return $fetch<T>(url, {
+    credentials: 'include',
     ...options,
-    headers: {
-      ...options?.headers,
-      ...(tokenCookie.value ? { authorization: `Bearer ${tokenCookie.value}` } : {})
-    }
   })
 }

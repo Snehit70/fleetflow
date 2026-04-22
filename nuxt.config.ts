@@ -25,6 +25,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET,
+    allowSelfRegistration: process.env.ALLOW_SELF_REGISTRATION === 'true',
   },
 
   tailwindcss: {

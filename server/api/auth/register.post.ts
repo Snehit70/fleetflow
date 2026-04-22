@@ -1,6 +1,12 @@
 import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
 export default defineEventHandler(async (event) => {
+  const runtimeConfig = useRuntimeConfig(event)
+
+  if (!runtimeConfig.allowSelfRegistration) {
+    throw createError({ statusCode: 404, message: 'Not found' })
+  }
+
   const { email, password, name } = await readBody(event)
 
   if (!email || !password) {

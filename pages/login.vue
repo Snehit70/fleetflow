@@ -180,40 +180,11 @@
           </form>
         </div>
 
-        <!-- Demo Credentials -->
         <div class="mt-6 p-4 bg-muted rounded-lg">
-          <h4 class="text-sm font-medium mb-3">Demo Accounts</h4>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <button 
-              @click="fillCredentials('admin@fleetflow.com')"
-              class="px-3 py-2 bg-background rounded border border-border hover:border-primary transition-colors text-left"
-            >
-              <div class="font-medium">Manager</div>
-              <div class="text-muted-foreground">admin@fleetflow.com</div>
-            </button>
-            <button 
-              @click="fillCredentials('dispatch@fleetflow.com')"
-              class="px-3 py-2 bg-background rounded border border-border hover:border-primary transition-colors text-left"
-            >
-              <div class="font-medium">Dispatcher</div>
-              <div class="text-muted-foreground">dispatch@fleetflow.com</div>
-            </button>
-            <button 
-              @click="fillCredentials('safety@fleetflow.com')"
-              class="px-3 py-2 bg-background rounded border border-border hover:border-primary transition-colors text-left"
-            >
-              <div class="font-medium">Safety Officer</div>
-              <div class="text-muted-foreground">safety@fleetflow.com</div>
-            </button>
-            <button 
-              @click="fillCredentials('finance@fleetflow.com')"
-              class="px-3 py-2 bg-background rounded border border-border hover:border-primary transition-colors text-left"
-            >
-              <div class="font-medium">Finance</div>
-              <div class="text-muted-foreground">finance@fleetflow.com</div>
-            </button>
-          </div>
-          <p class="text-xs text-muted-foreground mt-3">Password: password123</p>
+          <h4 class="text-sm font-medium mb-2">Access</h4>
+          <p class="text-sm text-muted-foreground">
+            Sign in with a provisioned account. Self-registration is disabled by default in production.
+          </p>
         </div>
       </div>
     </div>
@@ -230,32 +201,22 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 const showPassword = ref(false)
-const router = useRouter()
+const { fetchUser, isAuthenticated, login } = useAuth()
 
-function fillCredentials(emailValue: string) {
-  email.value = emailValue
-  password.value = 'password123'
-}
+onMounted(async () => {
+  await fetchUser()
+
+  if (isAuthenticated.value) {
+    await navigateTo('/')
+  }
+})
 
 async function handleLogin() {
   error.value = ''
   loading.value = true
 
   try {
-    const response = await $fetch('/api/auth/login', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value
-      }
-    })
-
-    // Set cookie for auth
-    const authCookie = useCookie('auth')
-    authCookie.value = response.token
-
-    // Redirect to dashboard
-    await router.push('/')
+    await login(email.value, password.value)
   } catch (e: any) {
     error.value = e.data?.message || 'Invalid credentials. Please try again.'
   } finally {

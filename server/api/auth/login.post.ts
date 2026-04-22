@@ -1,6 +1,7 @@
 import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
 import { signToken } from '#server/utils/jwt'
+import { setAuthCookie } from '#server/utils/auth-cookie'
 
 export default defineEventHandler(async (event) => {
   const { email, password } = await readBody(event)
@@ -25,11 +26,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const token = signToken({ userId: user.id, role: user.role })
+  setAuthCookie(event, token)
 
   const { password: _, ...userWithoutPassword } = user
 
   return {
-    token,
     user: userWithoutPassword
   }
 })

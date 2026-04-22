@@ -1,26 +1,29 @@
 export const useAuth = () => {
   const user = useState<User | null>('user', () => null)
-  const tokenCookie = useCookie<string | undefined>('auth')
+  const initialized = useState<boolean>('auth_initialized', () => false)
+  const loading = useState<boolean>('auth_loading', () => false)
   const router = useRouter()
 
-  const isAuthenticated = computed(() => !!tokenCookie.value && !!user.value)
+  const isAuthenticated = computed(() => !!user.value)
 
-  async function fetchUser() {
-    if (!tokenCookie.value) {
-      user.value = null
+  async function fetchUser(force = false) {
+    if (loading.value) {
       return
     }
 
+    if (!force && initialized.value) {
+      return
+    }
+
+    loading.value = true
     try {
-      const userData = await $fetch('/api/auth/me', {
-        headers: {
-          authorization: `Bearer ${tokenCookie.value}`
-        }
-      })
+      const userData = await $fetch('/api/auth/me')
       user.value = userData
     } catch {
-      tokenCookie.value = undefined
       user.value = null
+    } finally {
+      initialized.value = true
+      loading.value = false
     }
   }
 
@@ -29,20 +32,22 @@ export const useAuth = () => {
       method: 'POST',
       body: { email, password }
     })
-    tokenCookie.value = data.token
     user.value = data.user
+    initialized.value = true
     await router.push('/')
   }
 
-  function logout() {
-    tokenCookie.value = undefined
+  async function logout() {
+    await $fetch('/api/auth/logout', { method: 'POST' })
     user.value = null
-    router.push('/login')
+    initialized.value = true
+    await router.push('/login')
   }
 
   return {
     user: readonly(user),
     isAuthenticated,
+    loading: readonly(loading),
     fetchUser,
     login,
     logout
