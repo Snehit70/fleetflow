@@ -2,7 +2,7 @@ import { prisma } from '#server/utils/prisma'
 import { verifyToken } from '#server/utils/jwt'
 import { AUTH_COOKIE_NAME } from '#server/utils/auth-cookie'
 
-const PUBLIC_PATHS = ['/api/auth/login', '/api/auth/logout', '/api/auth/register']
+const PUBLIC_PATHS = ['/api/auth/login', '/api/auth/logout']
 
 export default defineEventHandler(async (event) => {
   const path = event.path
@@ -17,7 +17,15 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  const token = getCookie(event, AUTH_COOKIE_NAME) || getHeader(event, 'authorization')?.replace('Bearer ', '')
+  // Registration is public only when explicitly enabled.
+  if (path.startsWith('/api/auth/register')) {
+    const runtimeConfig = useRuntimeConfig(event)
+    if (runtimeConfig.allowSelfRegistration) {
+      return
+    }
+  }
+
+  const token = getCookie(event, AUTH_COOKIE_NAME)
 
   if (!token) {
     throw createError({ statusCode: 401, message: 'No token provided' })

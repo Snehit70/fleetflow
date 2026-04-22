@@ -1,12 +1,13 @@
 import { prisma } from '#server/utils/prisma'
 import bcrypt from 'bcryptjs'
+import { requireRole } from '#server/utils/api-auth'
 import { registerSchema } from '#server/utils/schemas'
 import { parseRequestBody } from '#server/utils/validation'
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
 
   if (!runtimeConfig.allowSelfRegistration) {
-    throw createError({ statusCode: 404, message: 'Not found' })
+    requireRole(event, ['MANAGER'])
   }
 
   const { email, password, name } = await parseRequestBody(event, registerSchema)

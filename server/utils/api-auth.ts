@@ -1,9 +1,9 @@
-import { getCookie, getHeader } from 'h3'
+import { getCookie } from 'h3'
 import { verifyToken } from './jwt'
 import { AUTH_COOKIE_NAME } from './auth-cookie'
 
 export function getCurrentUser(event: any) {
-  const token = getCookie(event, AUTH_COOKIE_NAME) || getHeader(event, 'authorization')?.replace('Bearer ', '')
+  const token = getCookie(event, AUTH_COOKIE_NAME)
 
   if (!token) {
     return null
