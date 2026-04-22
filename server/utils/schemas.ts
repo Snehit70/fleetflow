@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-const driverStatusSchema = z.enum(['ON_DUTY', 'OFF_DUTY', 'SUSPENDED'])
+const driverStatusSchema = z.enum(['ON_DUTY', 'ON_TRIP', 'OFF_DUTY', 'SUSPENDED'])
+const driverWritableStatusSchema = z.enum(['ON_DUTY', 'OFF_DUTY', 'SUSPENDED'])
 const vehicleStatusSchema = z.enum(['AVAILABLE', 'ON_TRIP', 'IN_SHOP', 'RETIRED'])
 const vehicleTypeSchema = z.enum(['TRUCK', 'VAN', 'BIKE'])
 
@@ -51,7 +52,7 @@ export const driverCreateSchema = z.object({
   licenseNumber: trimmedString('License number', 64),
   licenseExpiry: z.coerce.date(),
   licenseCategory: trimmedString('License category', 100),
-  status: driverStatusSchema.default('ON_DUTY'),
+  status: driverWritableStatusSchema.default('ON_DUTY'),
   safetyScore: z.coerce.number().int('Safety score must be a whole number').min(0, 'Safety score cannot be negative').max(100, 'Safety score cannot exceed 100').default(100),
 }).strict()
 
@@ -62,7 +63,7 @@ export const driverUpdateSchema = z.object({
   licenseNumber: trimmedString('License number', 64).optional(),
   licenseExpiry: z.coerce.date().optional(),
   licenseCategory: trimmedString('License category', 100).optional(),
-  status: driverStatusSchema.optional(),
+  status: driverWritableStatusSchema.optional(),
   safetyScore: z.coerce.number().int('Safety score must be a whole number').min(0, 'Safety score cannot be negative').max(100, 'Safety score cannot exceed 100').optional(),
 }).strict().refine(body => Object.keys(body).length > 0, {
   message: 'At least one field must be provided',

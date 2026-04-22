@@ -50,6 +50,7 @@
         <select v-model="filterStatus" class="select w-40">
           <option value="">All Statuses</option>
           <option value="ON_DUTY">On Duty</option>
+          <option value="ON_TRIP">On Trip</option>
           <option value="OFF_DUTY">Off Duty</option>
           <option value="SUSPENDED">Suspended</option>
         </select>
@@ -207,6 +208,7 @@
               <label class="block text-sm font-medium mb-2">Status</label>
               <select v-model="form.status" class="select">
                 <option value="ON_DUTY">On Duty</option>
+                <option value="ON_TRIP">On Trip</option>
                 <option value="OFF_DUTY">Off Duty</option>
                 <option value="SUSPENDED">Suspended</option>
               </select>
@@ -277,7 +279,7 @@ interface Driver {
   licenseNumber: string
   licenseExpiry: string
   licenseCategory: 'TRUCK' | 'VAN' | 'BIKE'
-  status: 'ON_DUTY' | 'OFF_DUTY' | 'SUSPENDED'
+  status: 'ON_DUTY' | 'ON_TRIP' | 'OFF_DUTY' | 'SUSPENDED'
   safetyScore: number
 }
 
@@ -304,7 +306,7 @@ const form = ref({
   licenseNumber: '',
   licenseExpiry: '',
   licenseCategory: 'VAN' as 'TRUCK' | 'VAN' | 'BIKE',
-  status: 'ON_DUTY' as 'ON_DUTY' | 'OFF_DUTY' | 'SUSPENDED',
+  status: 'ON_DUTY' as 'ON_DUTY' | 'ON_TRIP' | 'OFF_DUTY' | 'SUSPENDED',
   safetyScore: 100
 })
 

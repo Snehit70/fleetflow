@@ -6,48 +6,54 @@ export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, message: 'Trip ID required' })
 
-  const trip = await prisma.trip.findUnique({
-    where: { id },
-    include: { vehicle: true, driver: true }
-  })
-
-  if (!trip) throw createError({ statusCode: 404, message: 'Trip not found' })
-
-  if (trip.status === 'CANCELLED') {
-    throw createError({ statusCode: 400, message: 'Trip is already cancelled' })
-  }
-
-  // Can cancel DRAFT or DISPATCHED
-  if (!['DRAFT', 'DISPATCHED'].includes(trip.status)) {
-    throw createError({ statusCode: 400, message: `Cannot cancel trip in ${trip.status} status` })
-  }
-
-  // If DISPATCHED, we need to revert vehicle and driver status in a transaction
-  if (trip.status === 'DISPATCHED') {
-    await prisma.$transaction(async (tx) => {
-      // Update trip to CANCELLED
-      await tx.trip.update({
-        where: { id },
-        data: { status: 'CANCELLED' }
-      })
-      // Set vehicle back to AVAILABLE
-      await tx.vehicle.update({
-        where: { id: trip.vehicleId },
-        data: { status: 'AVAILABLE' }
-      })
-      // Set driver back to ON_DUTY
-      await tx.driver.update({
-        where: { id: trip.driverId },
-        data: { status: 'ON_DUTY' }
-      })
-    })
-  } else {
-    // DRAFT - just cancel the trip
-    await prisma.trip.update({
+  await prisma.$transaction(async (tx) => {
+    const trip = await tx.trip.findUnique({
       where: { id },
-      data: { status: 'CANCELLED' }
+      include: { vehicle: true, driver: true },
     })
-  }
+
+    if (!trip) {
+      throw createError({ statusCode: 404, message: 'Trip not found' })
+    }
+
+    if (trip.status === 'CANCELLED') {
+      throw createError({ statusCode: 400, message: 'Trip is already cancelled' })
+    }
+
+    if (!['DRAFT', 'DISPATCHED'].includes(trip.status)) {
+      throw createError({ statusCode: 400, message: `Cannot cancel trip in ${trip.status} status` })
+    }
+
+    const cancelTrip = await tx.trip.updateMany({
+      where: { id, status: trip.status },
+      data: { status: 'CANCELLED' },
+    })
+
+    if (!cancelTrip.count) {
+      throw createError({ statusCode: 409, message: 'Trip state changed. Refresh and try again.' })
+    }
+
+    if (trip.status === 'DISPATCHED') {
+      const [vehicleUpdate, driverUpdate] = await Promise.all([
+        tx.vehicle.updateMany({
+          where: { id: trip.vehicleId, status: 'ON_TRIP' },
+          data: { status: 'AVAILABLE' },
+        }),
+        tx.driver.updateMany({
+          where: { id: trip.driverId, status: 'ON_TRIP' },
+          data: { status: 'ON_DUTY' },
+        }),
+      ])
+
+      if (!vehicleUpdate.count) {
+        throw createError({ statusCode: 409, message: 'Vehicle state changed. Refresh and try again.' })
+      }
+
+      if (!driverUpdate.count) {
+        throw createError({ statusCode: 409, message: 'Driver state changed. Refresh and try again.' })
+      }
+    }
+  })
 
   return { message: 'Trip cancelled' }
 })

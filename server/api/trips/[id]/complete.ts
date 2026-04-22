@@ -7,51 +7,65 @@ export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, message: 'Trip ID required' })
 
-  const trip = await prisma.trip.findUnique({
-    where: { id },
-    include: { vehicle: true, driver: true }
-  })
-
-  if (!trip) throw createError({ statusCode: 404, message: 'Trip not found' })
-
-  // Can only complete DISPATCHED trips
-  if (trip.status !== 'DISPATCHED') {
-    throw createError({ statusCode: 400, message: `Cannot complete trip in ${trip.status} status` })
-  }
-
   const { endOdometer } = await parseRequestBody(event, tripCompleteSchema)
-
-  if (trip.startOdometer === null) {
-    throw createError({ statusCode: 400, message: 'Trip has no startOdometer recorded' })
-  }
-
-  if (endOdometer <= trip.startOdometer) {
-    throw createError({ statusCode: 400, message: 'endOdometer must be greater than startOdometer' })
-  }
 
   const now = new Date()
   await prisma.$transaction(async (tx) => {
-    // Update trip to COMPLETED
-    await tx.trip.update({
+    const trip = await tx.trip.findUnique({
       where: { id },
-      data: {
-        status: 'COMPLETED',
-        endOdometer,
-        completedAt: now
-      }
+      include: { vehicle: true, driver: true },
     })
 
-    // Update vehicle to AVAILABLE
-    await tx.vehicle.update({
-      where: { id: trip.vehicleId },
-      data: { status: 'AVAILABLE', odometer: endOdometer }
-    })
+    if (!trip) {
+      throw createError({ statusCode: 404, message: 'Trip not found' })
+    }
 
-    // Update driver to OFF_DUTY? Actually spec says ON_DUTY after complete
-    await tx.driver.update({
-      where: { id: trip.driverId },
-      data: { status: 'ON_DUTY' }
-    })
+    if (trip.status !== 'DISPATCHED') {
+      throw createError({ statusCode: 400, message: `Cannot complete trip in ${trip.status} status` })
+    }
+
+    if (trip.startOdometer === null) {
+      throw createError({ statusCode: 400, message: 'Trip has no startOdometer recorded' })
+    }
+
+    if (endOdometer <= trip.startOdometer) {
+      throw createError({ statusCode: 400, message: 'endOdometer must be greater than startOdometer' })
+    }
+
+    const [tripUpdate, vehicleUpdate, driverUpdate] = await Promise.all([
+      tx.trip.updateMany({
+        where: { id, status: 'DISPATCHED' },
+        data: {
+          status: 'COMPLETED',
+          endOdometer,
+          completedAt: now,
+        },
+      }),
+      tx.vehicle.updateMany({
+        where: {
+          id: trip.vehicleId,
+          status: 'ON_TRIP',
+          odometer: { lte: endOdometer },
+        },
+        data: { status: 'AVAILABLE', odometer: endOdometer },
+      }),
+      tx.driver.updateMany({
+        where: { id: trip.driverId, status: 'ON_TRIP' },
+        data: { status: 'ON_DUTY' },
+      }),
+    ])
+
+    if (!tripUpdate.count) {
+      throw createError({ statusCode: 409, message: 'Trip state changed. Refresh and try again.' })
+    }
+
+    if (!vehicleUpdate.count) {
+      throw createError({ statusCode: 409, message: 'Vehicle state changed. Refresh and try again.' })
+    }
+
+    if (!driverUpdate.count) {
+      throw createError({ statusCode: 409, message: 'Driver state changed. Refresh and try again.' })
+    }
   })
 
   return { message: 'Trip completed' }

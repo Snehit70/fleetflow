@@ -7,9 +7,15 @@ export default defineEventHandler(async (event) => {
   const { vehicleId, driverId, origin, destination, cargoWeight, cargoDescription } = await parseRequestBody(event, tripCreateSchema)
 
   // Fetch vehicle and driver
-  const [vehicle, driver] = await Promise.all([
+  const [vehicle, driver, activeAssignments] = await Promise.all([
     prisma.vehicle.findUnique({ where: { id: vehicleId } }),
-    prisma.driver.findUnique({ where: { id: driverId } })
+    prisma.driver.findUnique({ where: { id: driverId } }),
+    prisma.trip.count({
+      where: {
+        status: 'DISPATCHED',
+        OR: [{ vehicleId }, { driverId }],
+      },
+    }),
   ])
 
   if (!vehicle) throw createError({ statusCode: 404, message: 'Vehicle not found' })
@@ -22,6 +28,10 @@ export default defineEventHandler(async (event) => {
 
   if (driver.status !== 'ON_DUTY') {
     throw createError({ statusCode: 400, message: 'Driver must be ON_DUTY to be assigned to a trip' })
+  }
+
+  if (activeAssignments > 0) {
+    throw createError({ statusCode: 400, message: 'Vehicle or driver already has an active dispatched trip' })
   }
 
   const expiryDate = new Date(driver.licenseExpiry)

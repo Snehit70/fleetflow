@@ -7,19 +7,28 @@ export default defineEventHandler(async (event) => {
   requireRole(event, ['MANAGER'])
   const { vehicleId, description, cost, date, notes } = await parseRequestBody(event, maintenanceCreateSchema)
 
-  // Check if vehicle exists
-  const vehicle = await prisma.vehicle.findUnique({
-    where: { id: vehicleId }
-  })
-
-  if (!vehicle) throw createError({ statusCode: 404, message: 'Vehicle not found' })
-
-  if (vehicle.status === 'ON_TRIP') {
-    throw createError({ statusCode: 400, message: 'Cannot log maintenance for vehicle currently on a trip. Complete the trip first.' })
-  }
-
   // Create maintenance record and update vehicle status in transaction
   await prisma.$transaction(async (tx) => {
+    const vehicleStatusUpdate = await tx.vehicle.updateMany({
+      where: {
+        id: vehicleId,
+        status: { not: 'ON_TRIP' },
+      },
+      data: { status: 'IN_SHOP' },
+    })
+
+    if (!vehicleStatusUpdate.count) {
+      const vehicle = await tx.vehicle.findUnique({ where: { id: vehicleId }, select: { status: true } })
+      if (!vehicle) {
+        throw createError({ statusCode: 404, message: 'Vehicle not found' })
+      }
+
+      throw createError({
+        statusCode: 409,
+        message: 'Cannot log maintenance for vehicle currently on a trip. Complete the trip first.',
+      })
+    }
+
     await tx.maintenance.create({
       data: {
         vehicleId,
@@ -28,12 +37,6 @@ export default defineEventHandler(async (event) => {
         date: date || new Date(),
         notes: notes || null
       }
-    })
-
-    // Auto-update vehicle status to IN_SHOP
-    await tx.vehicle.update({
-      where: { id: vehicleId },
-      data: { status: 'IN_SHOP' }
     })
   })
 
