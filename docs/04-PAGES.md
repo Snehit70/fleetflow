@@ -167,7 +167,7 @@ Driver management and compliance tracking.
 - Visual warnings for compliance
 - Block assignment if expired (shown in UI)
 - Safety score display (0-100)
-- Status toggle
+- Status toggle (ON_TRIP is system-managed by trip dispatch workflow)
 
 ### API Calls
 - `GET /api/drivers` - List all

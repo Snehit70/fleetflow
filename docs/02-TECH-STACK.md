@@ -4,7 +4,7 @@
 
 | Layer | Technology | Version |
 |-------|------------|---------|
-| **Framework** | Nuxt 3 | Latest |
+| **Framework** | Nuxt 4 | Latest |
 | **Frontend** | Vue 3 + Composition API | 3.x |
 | **UI Components** | shadcn-vue | Latest |
 | **Styling** | Tailwind CSS | 3.x |
@@ -16,7 +16,7 @@
 
 ## Why These Choices?
 
-### Nuxt 3 (Full-Stack Framework)
+### Nuxt 4 (Full-Stack Framework)
 - **Single codebase** for frontend and backend
 - **Server routes** (`/server/api/`) work like Express.js
 - **No CORS issues** - same origin for API calls
@@ -59,7 +59,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│                      NUXT 3 APP                         │
+│                      NUXT 4 APP                         │
 ├─────────────────────────────────────────────────────────┤
 │  PAGES (Vue 3)                                          │
 │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐       │

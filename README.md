@@ -1,7 +1,5 @@
 # FleetFlow - Modular Fleet & Logistics Management System
 
-> Hackathon: **Odoo x Gujarat Vidyapith Hackathon '26**
-
 A centralized, rule-based digital hub that optimizes delivery fleet lifecycle, monitors driver safety, and tracks financial performance.
 
 ![Login Screen](./public/login-screenshot.png)
@@ -27,6 +25,13 @@ A centralized, rule-based digital hub that optimizes delivery fleet lifecycle, m
 - **Analytics** - Fuel efficiency charts, cost breakdown, ROI calculations, CSV exports
 - **RBAC** - Role-based access control (Manager, Dispatcher, Safety Officer, Financial Analyst)
 
+## Security And Production Notes
+
+- Auth is cookie-based (`HttpOnly`, `SameSite=Lax`, `Secure` in production).
+- API routes rely on authenticated cookie sessions instead of client-supplied bearer tokens.
+- Self-registration is disabled by default; user provisioning should be manager-controlled.
+- Driver `ON_TRIP` status is system-managed by trip dispatch/complete/cancel flows.
+
 ## Quick Start
 
 ```bash
@@ -44,7 +49,9 @@ bun run dev
 
 Open http://localhost:4000
 
-## Demo Credentials
+## Seed Credentials (Development Only)
+
+The default seed data is for local development. Do not use these accounts or passwords in production environments.
 
 | Role | Email | Password |
 |------|-------|----------|

@@ -73,6 +73,7 @@
 | Value | Description |
 |-------|-------------|
 | `ON_DUTY` | Available for assignment |
+| `ON_TRIP` | Currently assigned to an active dispatched trip |
 | `OFF_DUTY` | Not working |
 | `SUSPENDED` | Cannot be assigned (compliance issue) |
 
@@ -123,6 +124,7 @@ enum VehicleType {
 
 enum DriverStatus {
   ON_DUTY
+  ON_TRIP
   OFF_DUTY
   SUSPENDED
 }

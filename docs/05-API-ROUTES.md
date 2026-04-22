@@ -6,17 +6,16 @@ http://localhost:3000/api
 ```
 
 ## Authentication
-All routes except `/api/auth/login` and `/api/auth/register` require JWT token in header:
-```http
-Authorization: Bearer <token>
-```
+All protected routes require the auth cookie set by login (`HttpOnly`, `SameSite=Lax`, `Secure` in production).
+
+`/api/auth/register` is public only when `ALLOW_SELF_REGISTRATION=true`; otherwise it requires a logged-in MANAGER.
 
 ---
 
 ## Auth Routes
 
 ### POST `/api/auth/login`
-Authenticate user and receive JWT token.
+Authenticate user and set auth cookie.
 
 **Request:**
 ```json
@@ -29,7 +28,6 @@ Authenticate user and receive JWT token.
 **Response (200):**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs...",
   "user": {
     "id": "uuid",
     "email": "admin@fleetflow.com",
@@ -45,7 +43,7 @@ Authenticate user and receive JWT token.
 ---
 
 ### POST `/api/auth/register`
-Create new user account. New users are always created with DISPATCHER role.
+Create new user account. New users are always created with `DISPATCHER` role.
 
 **Request:**
 ```json
@@ -65,6 +63,10 @@ Create new user account. New users are always created with DISPATCHER role.
   "role": "DISPATCHER"
 }
 ```
+
+**Access Rules:**
+- Public only when `ALLOW_SELF_REGISTRATION=true`
+- Otherwise requires a logged-in `MANAGER`
 
 ---
 
@@ -192,7 +194,7 @@ Delete vehicle.
 List all drivers.
 
 **Query Params:**
-- `status`: ON_DUTY | OFF_DUTY | SUSPENDED
+- `status`: ON_DUTY | ON_TRIP | OFF_DUTY | SUSPENDED
 - `category`: VAN | TRUCK | BIKE
 - `search`: string
 
@@ -334,18 +336,13 @@ Create new trip.
 ### POST `/api/trips/:id/dispatch`
 Dispatch a draft trip.
 
-**Request:**
-```json
-{
-  "startOdometer": 15000
-}
-```
+**Request:** Empty body
 
 **Side Effects:**
 - Trip.status → DISPATCHED
 - Trip.startedAt → now()
 - Vehicle.status → ON_TRIP
-- Driver (conceptually on trip)
+- Driver.status → ON_TRIP
 
 **Response (200):** Updated trip object
 
@@ -366,6 +363,7 @@ Complete a dispatched trip.
 - Trip.completedAt → now()
 - Vehicle.odometer → endOdometer
 - Vehicle.status → AVAILABLE
+- Driver.status → ON_DUTY
 
 **Response (200):** Updated trip object
 
@@ -376,7 +374,7 @@ Cancel a trip.
 
 **Side Effects:**
 - Trip.status → CANCELLED
-- If was DISPATCHED: Vehicle.status → AVAILABLE
+- If was DISPATCHED: Vehicle.status → AVAILABLE and Driver.status → ON_DUTY
 
 **Response (200):** Updated trip object
 
